@@ -14,7 +14,7 @@ let satisfactory = new Satisfactory();
 // Récupération saisi du clavier
 view.btnSearch.addEventListener("click", ()=>{
     satisfactory.setSearch(view.searchBar.value);
-    getAllNamesOfAllCategoriesApi()
+    getAllNamesofItems()
         .then(data =>{
             console.log(data);
         })
@@ -25,7 +25,55 @@ view.btnSearch.addEventListener("click", ()=>{
 });
 
 function getAllNamesOfAllCategoriesApi() {
+
+}
+
+async function getAllNamesofItems() {
     return fetch("https://dexils.dyndns.org:58000/api/item/getAllNames", {
+        headers: {Authorization: `Bearer ${token}`}
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des données');
+        }
+        return response.json();
+    });
+}
+
+async function getAllNamesofBuildings() {
+    return fetch("https://dexils.dyndns.org:58000/api/building/getAllNames", {
+        headers: {Authorization: `Bearer ${token}`}
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des données');
+        }
+        return response.json();
+    });
+}
+
+async function getAllNamesofFauna() {
+    return fetch("https://dexils.dyndns.org:58000/api/fauna/getAllNames", {
+        headers: {Authorization: `Bearer ${token}`}
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des données');
+        }
+        return response.json();
+    });
+}
+
+async function getAllNamesofTransport() {
+    return fetch("https://dexils.dyndns.org:58000/api/transportation/getAllNames", {
+        headers: {Authorization: `Bearer ${token}`}
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des données');
+        }
+        return response.json();
+    });
+}
+
+async function getAllNamesofFuel() {
+    return fetch("https://dexils.dyndns.org:58000/api/fuel/getAllNames", {
         headers: {Authorization: `Bearer ${token}`}
     }).then(response => {
         if (!response.ok) {
