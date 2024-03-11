@@ -14,7 +14,7 @@ let satisfactory = new Satisfactory();
 // Récupération saisi du clavier
 view.btnSearch.addEventListener("click", ()=>{
     satisfactory.setSearch(view.searchBar.value);
-    getAllNamesofItems()
+    getAllNamesOfAllCategoriesApi()
         .then(data =>{
             console.log(data);
         })
