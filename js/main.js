@@ -1,7 +1,7 @@
 // Invocation du mode strict
 "use strict";
 
-let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJsb2dpbiI6IkRlWGlscyIsImV4cCI6MTcxMDIzMjYzMywiaWF0IjoxNzEwMTQ2MjMzfQ.Unipv8B9JjgN7wZHeHr_DrH9omiPf2dq_SUZuPTLQqs"
+let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJsb2dpbiI6IkRlWGlscyIsImV4cCI6MTcxMDIzNjQ0MCwiaWF0IjoxNzEwMTUwMDQwfQ.xSvesXz867X74zhzgQ6gIp7fI_i3rcYfs5jDIaD-Aws"
 
 
 // ### Initialisation du modèle ###
