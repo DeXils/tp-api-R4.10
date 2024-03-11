@@ -9,6 +9,9 @@ const view = {
     btnSearch: document.getElementById("btnSearch"),
 
     // Bouton pour les favoris
-    btnFavorite:document.getElementById("btnFavorite"),
+    btnFavorite: document.getElementById("btnFavorite"),
+
+    // List des suggestion
+    searchList: document.getElementById("searchList"),
 
 };

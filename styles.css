@@ -84,18 +84,20 @@ li {
 }
 
 .search-body input {
+  margin: 5px 0;
   padding-left: 5px;
   border:none;
   border-radius: 10px;
   outline:none;
   background-color: #333333;
-  color: white;
+  color: #E59345;
   font-size: 1.3em;
   width: calc(100dvw - 25dvw - 162px);
 }
 
 .search-body hr {
   border-color: #E59345;
+  margin: 5px;
 }
 
 .search-body p {
@@ -111,7 +113,7 @@ li {
   border:none;
   border-radius: 10px;
   cursor: pointer;
-
+  margin:0 10px;
 }
 
 .search-interface-input i {
@@ -119,5 +121,27 @@ li {
   font-size: 1.5em;
   transform: rotate(45deg);
   cursor: pointer;
+}
+
+.search-list {
+  height: 40dvh;
+  margin-left: 30px;
+  width: calc(100dvw - 25dvw - 122px);
+  background-color: #333333;
+  border: #4D4D4D solid 5px;
+  border-radius: 10px;
+  overflow-y: auto;
+}
+.search-list .list-search-element {
+  padding: 5px 10px;
+}
+.list-search-element {
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #E59345;
+}
+
+.list-search-element:hover {
+  background-color: #575757;
 }
 
