@@ -24,9 +24,28 @@ view.btnSearch.addEventListener("click", ()=>{
 
 });
 
-function getAllNamesOfAllCategoriesApi() {
+async function getAllNamesOfAllCategoriesApi() {
+    try {
+        const [items, buildings, fauna, transport, fuel] = await Promise.all([
+            getAllNamesofItems(),
+            getAllNamesofBuildings(),
+            getAllNamesofFauna(),
+            getAllNamesofTransport(),
+            getAllNamesofFuel()
+        ]);
 
+        return {
+            items,
+            buildings,
+            fauna,
+            transport,
+            fuel
+        };
+    } catch (error) {
+        throw new Error('Erreur lors de la récupération des données');
+    }
 }
+
 
 async function getAllNamesofItems() {
     return fetch("https://dexils.dyndns.org:58000/api/item/getAllNames", {
