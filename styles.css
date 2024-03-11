@@ -54,7 +54,7 @@ li {
 }
 
 .search-content {
-  background-image: url('/images/patern.png');
+  background-image: url('./images/patern.png');
   background-repeat: repeat;
   width: calc(100dvw - 15dvw - 2px);
 
