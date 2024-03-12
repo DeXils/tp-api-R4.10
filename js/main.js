@@ -268,21 +268,18 @@ view.searchBar.addEventListener("keyup", (event) => {
             // Récupération de l'id de l'élément
             getIdElementByName(url)
                 .then((data) => {
+
                     if(data['item']) {
                         url = "item/getItemInfoById/" + data['item'][0].id_item;
+                        getElementInfoById(url).then(item => computeItemElement(item, data['item'][0].id_item))
                     } else if(data['building']) {
                         url = "building/getBuildingInfoById/" + data['building'][0].id_building;
+                        getElementInfoById(url).then(building => computeItemElement(building, data['building'][0].id_building))
                     }else if(data['fauna']) {
                         url = "fauna/getFaunaInfoById/" + data['fauna'][0].id_fauna;
                     }else if(data['transportation']){
                         url = "transportation/getTransportationInfoById/" + data['transportation'][0].id_transportation;
                     }
-
-                    getElementInfoById(url)
-                    .then((item) => {
-                        console.log(item['item'])
-                        computeItemElement(item, data['item'][0].id_item)
-                    })
                 });
 
                
@@ -321,9 +318,6 @@ async function getIdElementByName(url) {
     return fetch(`https://dexils.dyndns.org:58000/api/${url}`, {
         headers: {Authorization: `Bearer ${token}`}
     }).then(response => {
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des données');
-        }
         return response.json();
     });
         
@@ -333,9 +327,6 @@ async function getElementInfoById(url){
     return fetch(`https://dexils.dyndns.org:58000/api/${url}`, {
         headers: {Authorization: `Bearer ${token}`}
     }).then(response => {
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des données');
-        }
         return response.json();
     });
 }
@@ -350,7 +341,7 @@ async function getReceipInfoById(url){
 
 function computeItemElement(item, itemId) {
     let itemElement = item['item'][0]
-    console.log(item)
+
     view.responseContainer.hidden = false;
     view.responseContainer.innerText = "";
 
@@ -376,7 +367,7 @@ function computeItemElement(item, itemId) {
     imgAndOtherDiv.appendChild(itemStatsDiv)
 
     let itemDescriptionP = document.createElement('p');
-    itemDescriptionP.innerText = itemElement.item_description;
+    itemDescriptionP.innerText = "Description : "+ itemElement.item_description;
     itemStatsDiv.appendChild(itemDescriptionP);
 
     let itemPalierP = document.createElement('p');
@@ -388,7 +379,7 @@ function computeItemElement(item, itemId) {
     itemStatsDiv.appendChild(itemStackP);
 
     let itemRessoucesPointP = document.createElement('p');
-    itemRessoucesPointP.innerText = "Point générer dans la broyeuse AWESOME : " + itemElement.item_ressources_point;
+    itemRessoucesPointP.innerText = "Point générer dans la broyeuse A.W.E.S.O.M.E. : " + itemElement.item_ressources_point;
     itemStatsDiv.appendChild(itemRessoucesPointP);
 
     getReceipInfoById(`receip/item/${itemId}`)
@@ -397,16 +388,156 @@ function computeItemElement(item, itemId) {
 
             let separatorHr = document.createElement('hr');
             separatorHr.className = "separator";
-            itemElementPricipalDiv.appendChild(separatorHr);
+            view.responseContainer.appendChild(separatorHr);
             
-            
+            data.item.forEach(receip => {
+                computeItemReceip(receip)
+            })
         }
 
     });
-
-    
-
 }
+
+function computeItemReceip(receip) {
+    let receipContainerDiv = document.createElement('div');
+    receipContainerDiv.className = "receip-container";
+    view.responseContainer.appendChild(receipContainerDiv);
+
+    let receipNameP = document.createElement('p');
+    receipNameP.innerText = receip.recette + " : ";
+    receipContainerDiv.appendChild(receipNameP);
+
+    let processReceipDiv = document.createElement('div');
+    processReceipDiv.className = "process-receip";
+    receipContainerDiv.appendChild(processReceipDiv);
+
+    let receipBuildingDiv = document.createElement('div');
+    receipBuildingDiv.className = "receip-building";
+
+    let buildingNameP = document.createElement('p');
+    buildingNameP.innerText = receip.batiment;
+    receipBuildingDiv.appendChild(buildingNameP);
+
+    let buildingImg = document.createElement('img');
+    let imgOfBuilding = "";
+    getBuildingIdByName(receip.batiment)
+        .then((data) => {
+            getBuildingInfoById(data.building[0].id_building)
+                .then((data) => {
+
+                    imgOfBuilding = data.imgBase64;
+                    buildingImg.src = "data:image/gif;base64," + imgOfBuilding;
+                    receipBuildingDiv.appendChild(buildingImg);
+
+                    let buildingTimeP = document.createElement('p');
+                    buildingTimeP.innerText ="Production : " + receip.temps + " sec";
+                    receipBuildingDiv.appendChild(buildingTimeP);
+                })
+        })
+
+    let receipProductDiv = document.createElement('div');
+    receipProductDiv.className = "receip-product";
+
+
+    let receipProduct1P = document.createElement('p');
+    receipProduct1P.innerText = "Produit → " + receip.produit_1_nombre + " " + receip.produit_1 + " - Ou " + ((60/receip.temps)*receip.produit_1_nombre) + "/min"
+    receipProductDiv.appendChild(receipProduct1P)
+
+    if(receip.produit_2){
+        let receipProduct2P = document.createElement('p');
+        receipProduct2P.innerText = "Produit → " + receip.produit_2_nombre + " " + receip.produit_2 + " - Ou " + ((60/receip.temps)*receip.produit_2_nombre) + "/min"
+        receipProductDiv.appendChild(receipProduct2P)
+    }
+
+    let receipPrerequisDiv = document.createElement('div');
+    receipPrerequisDiv.className = "receip-prerequis";
+
+    for (let i = 1; i <= 3; i++) {
+        const prerequis = receip[`prerequis_${i}`];
+        if (prerequis) {
+            let receipPrerequisP = document.createElement('p');
+            receipPrerequisP.innerText = `Prérequis ${i} : ${prerequis}`;
+            receipPrerequisDiv.appendChild(receipPrerequisP);
+        }
+    }
+
+    let ingredientsGroupDiv = document.createElement('div');
+    ingredientsGroupDiv.className = "ingredients-group";
+
+    if(!receip.ingredient_1_id){
+        processReceipDiv.appendChild(receipBuildingDiv);
+        processReceipDiv.appendChild(receipProductDiv);
+        processReceipDiv.appendChild(receipPrerequisDiv);
+    }else {
+        processReceipDiv.appendChild(ingredientsGroupDiv);
+        for (let i = 1; i <= 4; i++) {
+            let receipIngredientDiv = document.createElement('div');
+            receipIngredientDiv.className = "receip-ingredient"
+
+            const ingredient = receip[`ingredient_${i}`];
+            const ingredientId = receip[`ingredient_${i}_id`];
+            if (ingredient) {
+                ingredientsGroupDiv.appendChild(receipIngredientDiv)
+                let receipIngredientP = document.createElement('p');
+                receipIngredientP.innerText = ingredient;
+                receipIngredientDiv.appendChild(receipIngredientP);
+
+                let ingredientImg = document.createElement('img');
+
+                getItemInfoById(ingredientId)
+                    .then((data) => {
+
+                        ingredientImg.src = "data:image/gif;base64," + data.imgBase64;
+                        receipIngredientDiv.appendChild(ingredientImg);
+
+                        let ingredientNombreP = document.createElement('p');
+                        ingredientNombreP.innerText = receip.temps;
+                        receipIngredientDiv.appendChild(ingredientNombreP);
+
+                        processReceipDiv.appendChild(receipBuildingDiv);
+                        processReceipDiv.appendChild(receipProductDiv);
+                        processReceipDiv.appendChild(receipPrerequisDiv);
+                    })
+
+
+            }
+        }
+
+    }
+}
+
+async function getBuildingIdByName(name) {
+    return fetch(`https://dexils.dyndns.org:58000/api/building/getBuildingIdByName/${name}`, {
+        headers: {Authorization: `Bearer ${token}`}
+    }).then(response => {
+        return response.json();
+    });
+}
+
+async function getBuildingInfoById(id){
+    return fetch(`https://dexils.dyndns.org:58000/api/building/getBuildingInfoById/${id}`, {
+        headers: {Authorization: `Bearer ${token}`}
+    }).then(response => {
+        return response.json();
+    });
+}
+
+async function getItemIdByName(name) {
+    return fetch(`https://dexils.dyndns.org:58000/api/item/getItemIdByName/${name}`, {
+        headers: {Authorization: `Bearer ${token}`}
+    }).then(response => {
+        return response.json();
+    });
+}
+
+async function getItemInfoById(id){
+    return fetch(`https://dexils.dyndns.org:58000/api/item/getItemInfoById/${id}`, {
+        headers: {Authorization: `Bearer ${token}`}
+    }).then(response => {
+        return response.json();
+    });
+}
+
 
 
 
