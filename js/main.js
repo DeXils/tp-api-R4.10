@@ -1,8 +1,9 @@
 // Invocation du mode strict
 "use strict";
 
-let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJsb2dpbiI6IkRlWGlscyIsImV4cCI6MTcxMDI2NTU1MiwiaWF0IjoxNzEwMTc5MTUyfQ.GnfTH6R9YLmRKGbRyxqtm-d3l2Yg-QdFmQaoz-ZWXjM"
+let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJsb2dpbiI6IkRlWGlscyIsImV4cCI6MTcxMjgyNjg2OCwiaWF0IjoxNzEwMjM0ODY4fQ.Z6oOlkJb1xTqNCgkPBDL8ZjG0UlxNLXwj_WAYfmll9U"
 let searchList = document.getElementById("searchList");
+let responseSearch = document.getElementById("responseSearch");
 
 
 // ### Initialisation du modèle ###
@@ -237,10 +238,56 @@ view.searchBar.addEventListener("keyup", (event) => {
             satisfactory.setSearch(elementLi.getAttribute('data-text-value'));
             view.searchBar.value = satisfactory.getSearch();
             searchList.hidden = true;
-            // A Modifier (Surement changé de place)
-            getInfoElementByName(elementLi.getAttribute('data-text-value'), elementLi.getAttribute('data-text-category'))
-                .then((data) => console.log(data) )
-        })
+
+            // Récupération de l'url necessaire pour récupérer l'id de l'élément
+            let url = "";
+            switch (elementLi.getAttribute('data-text-category')) {
+                case "Item":
+                    url = "item/getItemIdByName/" + satisfactory.getSearch();
+                    break;
+                case "Recette d'item":
+                    url = "receip/item/getItemIdByName/" + satisfactory.getSearch();
+                    break;
+                case "Bâtiment":
+                    url = "building/getBuildingIdByName/" + satisfactory.getSearch();
+                    break;
+                case "Recette de bâtiment":
+                    url = "receip/building/getBuildingIdByName/" + satisfactory.getSearch();
+                    break;
+                case "Faunes":
+                    url = "fauna/getFaunaIdByName/" + satisfactory.getSearch();
+                    break;
+                case "Transport":
+                    url = "transportation/getTransportationIdByName/" + satisfactory.getSearch();
+                    break;
+                case "Recette de transport":
+                    url = "receip/transportation/getTransportationIdByName/" + satisfactory.getSearch();
+                    break;
+            }
+            
+            // Récupération de l'id de l'élément
+            getIdElementByName(url)
+                .then((data) => {
+                    if(data['item']) {
+                        url = "item/getItemInfoById/" + data['item'][0].id_item;
+                    } else if(data['building']) {
+                        url = "building/getBuildingInfoById/" + data['building'][0].id_building;
+                    }else if(data['fauna']) {
+                        url = "fauna/getFaunaInfoById/" + data['fauna'][0].id_fauna;
+                    }else if(data['transportation']){
+                        url = "transportation/getTransportationInfoById/" + data['transportation'][0].id_transportation;
+                    }
+
+                    getElementInfoById(url)
+                    .then((data) => {
+                        console.log(data['item'])
+                        computeItemElement(data)
+                    })
+                });
+
+               
+                
+        });
     });
 
 })
@@ -269,27 +316,55 @@ function computeSeachList(result, name, category, allResult = []) {
 
 }
 
-async function getInfoElementByName(name,category) {
-    console.log(category)
-    switch (category){
-        case "Item":
-            return fetch("https://dexils.dyndns.org:58000/api/item/getItemIdByName/" + name, {
-                headers: {Authorization: `Bearer ${token}`}
-            }).then(response => {
-                if (!response.ok) {
-                    throw new Error('Erreur lors de la récupération des données');
-                }
-                return response.json();
-            });
-        case "Recette d'item":
-        case "Bâtiment":
-        case "Recette de bâtiment":
-        case "Faunes":
-        case "Transport":
-        case "Recette de transport":
-    }
+async function getIdElementByName(url) {
+    
+    return fetch(`https://dexils.dyndns.org:58000/api/${url}`, {
+        headers: {Authorization: `Bearer ${token}`}
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des données');
+        }
+        return response.json();
+    });
+        
 }
 
+async function getElementInfoById(url){
+    return fetch(`https://dexils.dyndns.org:58000/api/${url}`, {
+        headers: {Authorization: `Bearer ${token}`}
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des données');
+        }
+        return response.json();
+    });
+}
+
+function computeItemElement(item) {
+    let itemElement = item['item'][0]
+    console.log(item)
+    let containerDiv = document.createElement('div');
+    containerDiv.className = "response-container";
+    responseSearch.appendChild(containerDiv);
+
+    let itemElementPricipalDiv = document.createElement('div');
+    itemElementPricipalDiv.className = "element-principal";
+    containerDiv.appendChild(itemElementPricipalDiv);
+
+    let nameAndCategoryP = document.createElement('p');
+    nameAndCategoryP.className = "name-and-category"
+    nameAndCategoryP.innerHTML = `${itemElement.item_name} | ${itemElement.item_category}`;
+    itemElementPricipalDiv.appendChild(nameAndCategoryP);
+
+    let imgAndDescriptionDiv = document.createElement("div");
+    imgAndDescriptionDiv.className = "img-and-description";
+    itemElementPricipalDiv.appendChild(imgAndDescriptionDiv);
+
+    let itemImg = document.createElement('img');
+    itemImg.src = "data:image/gif;base64," + item.imgBase64
+    imgAndDescriptionDiv.appendChild(itemImg)
+
+}
 
 
 
