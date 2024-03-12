@@ -14,4 +14,6 @@ const view = {
     // List des suggestion
     searchList: document.getElementById("searchList"),
 
+    // Conteneur de la réponse 
+    responseContainer: document.getElementById("responseContainer"),
 };

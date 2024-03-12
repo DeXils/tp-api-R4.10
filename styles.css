@@ -163,10 +163,33 @@ li {
 }
 
 .name-and-category {
+  font-size: 1.5em;
   margin:10px;
 }
 
-.img-and-description {
+.img-and-other {
   display: flex;
+  margin:10px;
+  align-items: center;
 }
 
+.img-and-other img {
+  height: 20dvh;
+  width: 20dvh;
+  margin-right: 10px;
+}
+
+.item-stats {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-stats p {
+  margin: 10px 0;
+  font-size: 1.3em;
+}
+
+.separator {
+  border: #4D4D4D solid 2px;
+  margin: 10px
+}

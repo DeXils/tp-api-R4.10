@@ -279,9 +279,9 @@ view.searchBar.addEventListener("keyup", (event) => {
                     }
 
                     getElementInfoById(url)
-                    .then((data) => {
-                        console.log(data['item'])
-                        computeItemElement(data)
+                    .then((item) => {
+                        console.log(item['item'])
+                        computeItemElement(item, data['item'][0].id_item)
                     })
                 });
 
@@ -340,29 +340,71 @@ async function getElementInfoById(url){
     });
 }
 
-function computeItemElement(item) {
+async function getReceipInfoById(url){
+    return fetch(`https://dexils.dyndns.org:58000/api/${url}`, {
+        headers: {Authorization: `Bearer ${token}`}
+    }).then(response => {
+        return response.json();
+    });
+}
+
+function computeItemElement(item, itemId) {
     let itemElement = item['item'][0]
     console.log(item)
-    let containerDiv = document.createElement('div');
-    containerDiv.className = "response-container";
-    responseSearch.appendChild(containerDiv);
+    view.responseContainer.hidden = false;
+    view.responseContainer.innerText = "";
 
     let itemElementPricipalDiv = document.createElement('div');
     itemElementPricipalDiv.className = "element-principal";
-    containerDiv.appendChild(itemElementPricipalDiv);
+    view.responseContainer.appendChild(itemElementPricipalDiv);
 
     let nameAndCategoryP = document.createElement('p');
     nameAndCategoryP.className = "name-and-category"
     nameAndCategoryP.innerHTML = `${itemElement.item_name} | ${itemElement.item_category}`;
     itemElementPricipalDiv.appendChild(nameAndCategoryP);
 
-    let imgAndDescriptionDiv = document.createElement("div");
-    imgAndDescriptionDiv.className = "img-and-description";
-    itemElementPricipalDiv.appendChild(imgAndDescriptionDiv);
+    let imgAndOtherDiv = document.createElement("div");
+    imgAndOtherDiv.className = "img-and-other";
+    itemElementPricipalDiv.appendChild(imgAndOtherDiv);
 
     let itemImg = document.createElement('img');
     itemImg.src = "data:image/gif;base64," + item.imgBase64
-    imgAndDescriptionDiv.appendChild(itemImg)
+    imgAndOtherDiv.appendChild(itemImg)
+
+    let itemStatsDiv = document.createElement('div');
+    itemStatsDiv.className = "item-stats"
+    imgAndOtherDiv.appendChild(itemStatsDiv)
+
+    let itemDescriptionP = document.createElement('p');
+    itemDescriptionP.innerText = itemElement.item_description;
+    itemStatsDiv.appendChild(itemDescriptionP);
+
+    let itemPalierP = document.createElement('p');
+    itemPalierP.innerText = "Débloquer par : " + itemElement.item_unlock;
+    itemStatsDiv.appendChild(itemPalierP);
+
+    let itemStackP = document.createElement('p');
+    itemStackP.innerText = "Stack de : " + itemElement.item_stack;
+    itemStatsDiv.appendChild(itemStackP);
+
+    let itemRessoucesPointP = document.createElement('p');
+    itemRessoucesPointP.innerText = "Point générer dans la broyeuse AWESOME : " + itemElement.item_ressources_point;
+    itemStatsDiv.appendChild(itemRessoucesPointP);
+
+    getReceipInfoById(`receip/item/${itemId}`)
+    .then((data) => {
+        if(!data.message) {
+
+            let separatorHr = document.createElement('hr');
+            separatorHr.className = "separator";
+            itemElementPricipalDiv.appendChild(separatorHr);
+            
+            
+        }
+
+    });
+
+    
 
 }
 
