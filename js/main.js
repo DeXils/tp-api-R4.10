@@ -271,14 +271,17 @@ view.searchBar.addEventListener("keyup", (event) => {
 
                     if(data['item']) {
                         url = "item/getItemInfoById/" + data['item'][0].id_item;
-                        getElementInfoById(url).then(item => computeItemElement(item, data['item'][0].id_item))
+                        getElementInfoById(url).then(item => computeInfoElement(item, data['item'][0].id_item, "item"))
                     } else if(data['building']) {
                         url = "building/getBuildingInfoById/" + data['building'][0].id_building;
-                        getElementInfoById(url).then(building => computeItemElement(building, data['building'][0].id_building))
+                        getElementInfoById(url).then(building => computeInfoElement(building, data['building'][0].id_building, "building"))
                     }else if(data['fauna']) {
                         url = "fauna/getFaunaInfoById/" + data['fauna'][0].id_fauna;
+                        getElementInfoById(url).then(fauna => computeInfoElement(fauna, data['fauna'][0].id_fauna, "fauna"))
                     }else if(data['transportation']){
                         url = "transportation/getTransportationInfoById/" + data['transportation'][0].id_transportation;
+                        getElementInfoById(url).then(transportation => computeInfoElement(transportation, data['transportation'][0].id_transportation, "transportation"))
+
                     }
                 });
 
@@ -339,63 +342,82 @@ async function getReceipInfoById(url){
     });
 }
 
-function computeItemElement(item, itemId) {
-    let itemElement = item['item'][0]
+function computeSimpleElement(typeElement,classElement, textElement, srcElemennt, parentElement) {
+    let simpleElement = document.createElement(typeElement);
+    simpleElement.className = classElement ? classElement : '';
+    simpleElement.innerText = textElement ? textElement: '';
+    simpleElement.src = srcElemennt ? srcElemennt: '';
+    parentElement.appendChild(simpleElement);
+}
+function computeInfoElement(element, elementId, elementType) {
+    console.log(element)
+    let elementData = element[elementType][0];
+
 
     view.responseContainer.hidden = false;
     view.responseContainer.innerText = "";
 
-    let itemElementPricipalDiv = document.createElement('div');
-    itemElementPricipalDiv.className = "element-principal";
-    view.responseContainer.appendChild(itemElementPricipalDiv);
+    computeSimpleElement("div", "element-principal", "","", view.responseContainer);
 
-    let nameAndCategoryP = document.createElement('p');
-    nameAndCategoryP.className = "name-and-category"
-    nameAndCategoryP.innerHTML = `${itemElement.item_name} | ${itemElement.item_category}`;
-    itemElementPricipalDiv.appendChild(nameAndCategoryP);
+    computeSimpleElement("p", "name-and-category", `${elementData[elementType + "_name"]} | ${elementData[elementType + "_category"] !== undefined ? elementData[elementType + "_category"] : elementData[elementType + "_behavior"]}`, "",document.querySelector(".element-principal"));
 
-    let imgAndOtherDiv = document.createElement("div");
-    imgAndOtherDiv.className = "img-and-other";
-    itemElementPricipalDiv.appendChild(imgAndOtherDiv);
+    computeSimpleElement("div", "img-and-other", "","", document.querySelector(".element-principal"));
 
-    let itemImg = document.createElement('img');
-    itemImg.src = "data:image/gif;base64," + item.imgBase64
-    imgAndOtherDiv.appendChild(itemImg)
+    computeSimpleElement("img", "", "","data:image/gif;base64," + element.imgBase64, document.querySelector(".img-and-other"));
 
-    let itemStatsDiv = document.createElement('div');
-    itemStatsDiv.className = "item-stats"
-    imgAndOtherDiv.appendChild(itemStatsDiv)
+    computeSimpleElement("div", "element-stats", "","", document.querySelector(".img-and-other"));
 
-    let itemDescriptionP = document.createElement('p');
-    itemDescriptionP.innerText = "Description : "+ itemElement.item_description;
-    itemStatsDiv.appendChild(itemDescriptionP);
+    computeSimpleElement("p", "", "Description : " + elementData[elementType + "_description"], "",document.querySelector(".element-stats"));
 
-    let itemPalierP = document.createElement('p');
-    itemPalierP.innerText = "Débloquer par : " + itemElement.item_unlock;
-    itemStatsDiv.appendChild(itemPalierP);
+    if (elementType !== "fauna") {
+        computeSimpleElement("p", "", "Débloquer par : " + elementData[elementType + "_unlock"], "",document.querySelector(".element-stats"));
+    }
 
-    let itemStackP = document.createElement('p');
-    itemStackP.innerText = "Stack de : " + itemElement.item_stack;
-    itemStatsDiv.appendChild(itemStackP);
+    if (elementType === "building" || elementType === "transportation") {
+        computeSimpleElement("p", "", "Largeur : " + elementData[elementType + "_width"] + " m","", document.querySelector(".element-stats"));
+        computeSimpleElement("p", "", "Longueur : " + elementData[elementType + "_length"]+ " m","", document.querySelector(".element-stats"));
+        computeSimpleElement("p", "", "Hauteur : " + elementData[elementType + "_height"]+ " m", "",document.querySelector(".element-stats"));
+        computeSimpleElement("p", "", "Aire : " + elementData[elementType + "_area"]+ " m²","", document.querySelector(".element-stats"));
+        let elementPowerConso = elementData[elementType + "_category"] !== "Alimentation" ? "Consomation : " : "Génère : ";
+        computeSimpleElement("p", "", elementPowerConso + elementData[elementType + "_power"] + " MW", "", document.querySelector(".element-stats"));
+    }
 
-    let itemRessoucesPointP = document.createElement('p');
-    itemRessoucesPointP.innerText = "Point générer dans la broyeuse A.W.E.S.O.M.E. : " + itemElement.item_ressources_point;
-    itemStatsDiv.appendChild(itemRessoucesPointP);
+    if (elementType === "item") {
+        computeSimpleElement("p", "", "Stack de : " + elementData[elementType + "_stack"], "",document.querySelector(".element-stats"));
+        computeSimpleElement("p", "", "Point générer dans la broyeuse A.W.E.S.O.M.E. : " + elementData[elementType + "_ressources_point"], "",document.querySelector(".element-stats"));
+    }
 
-    getReceipInfoById(`receip/item/${itemId}`)
-    .then((data) => {
-        if(!data.message) {
-
-            let separatorHr = document.createElement('hr');
-            separatorHr.className = "separator";
-            view.responseContainer.appendChild(separatorHr);
-            
-            data.item.forEach(receip => {
-                computeItemReceip(receip)
-            })
+    if(elementType === "fauna") {
+        computeSimpleElement("p", "", "Point de vie : " + elementData[elementType + "_life_point"], "",document.querySelector(".element-stats"));
+        if(elementData[elementType + "_loot_size"]) {
+            computeSimpleElement("p", "", "Loot obtenue : " + elementData[elementType + "_loot_size"] + " " + elementData[elementType + "_loot_name"], "",document.querySelector(".element-stats"));
         }
 
-    });
+        for (let i = 1; i <= 3; i++) {
+            const damage = elementData[`${elementType}_point_damage_${i}`];
+            const damageName = elementData[`${elementType}_name_damage_${i}`];
+            if (damage) {
+                computeSimpleElement("p", "", damageName + " - " + damage + " segments de dégats", "",document.querySelector(".element-stats"));
+            }
+        }
+
+    }
+
+
+    getReceipInfoById(`receip/item/${itemId}`)
+        .then((data) => {
+            if(!data.message) {
+
+                let separatorHr = document.createElement('hr');
+                separatorHr.className = "separator";
+                view.responseContainer.appendChild(separatorHr);
+
+                data.item.forEach(receip => {
+                    computeItemReceip(receip)
+                })
+            }
+
+        });
 }
 
 function computeItemReceip(receip) {
@@ -440,12 +462,12 @@ function computeItemReceip(receip) {
 
 
     let receipProduct1P = document.createElement('p');
-    receipProduct1P.innerText = "Produit → " + receip.produit_1_nombre + " " + receip.produit_1 + " - Ou " + ((60/receip.temps)*receip.produit_1_nombre) + "/min"
+    receipProduct1P.innerText = "Produit → " + receip.produit_1_nombre + " " + receip.produit_1;
     receipProductDiv.appendChild(receipProduct1P)
 
     if(receip.produit_2){
         let receipProduct2P = document.createElement('p');
-        receipProduct2P.innerText = "Produit → " + receip.produit_2_nombre + " " + receip.produit_2 + " - Ou " + ((60/receip.temps)*receip.produit_2_nombre) + "/min"
+        receipProduct2P.innerText = "Produit → " + receip.produit_2_nombre + " " + receip.produit_2;
         receipProductDiv.appendChild(receipProduct2P)
     }
 
@@ -496,7 +518,11 @@ function computeItemReceip(receip) {
 
                         processReceipDiv.appendChild(receipBuildingDiv);
                         processReceipDiv.appendChild(receipProductDiv);
-                        processReceipDiv.appendChild(receipPrerequisDiv);
+                        if(receipPrerequisDiv.innerText !== "") {
+                            processReceipDiv.appendChild(receipPrerequisDiv);
+                        }
+
+
                     })
 
 
@@ -537,6 +563,7 @@ async function getItemInfoById(id){
         return response.json();
     });
 }
+
 
 
 
