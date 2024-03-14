@@ -160,11 +160,9 @@ li {
   flex-direction: column;
 }
 
-.name-and-category {
-  display: flex;
-}
 
 .name-and-category {
+  display: flex;
   font-size: 1.5em;
   margin:10px;
 }

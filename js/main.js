@@ -342,195 +342,137 @@ async function getReceipInfoById(url){
     });
 }
 
-function computeSimpleElement(typeElement,classElement, textElement, srcElemennt, parentElement) {
+function computeSimpleElement(typeElement,classElement, textElement, srcElemennt, parentElement, idParentElement) {
     let simpleElement = document.createElement(typeElement);
-    simpleElement.className = classElement ? classElement : '';
-    simpleElement.innerText = textElement ? textElement: '';
-    simpleElement.src = srcElemennt ? srcElemennt: '';
+    if(classElement !== ""){
+        simpleElement.className = classElement;
+    }
+    if(textElement !== "") {
+        simpleElement.innerText = textElement;
+    }
+    if(srcElemennt !== ""){
+        simpleElement.src = srcElemennt;
+    }
+    if(idParentElement !== ""){
+        simpleElement.id = idParentElement;
+    }
     parentElement.appendChild(simpleElement);
 }
 function computeInfoElement(element, elementId, elementType) {
-    console.log(element)
     let elementData = element[elementType][0];
-
 
     view.responseContainer.hidden = false;
     view.responseContainer.innerText = "";
 
-    computeSimpleElement("div", "element-principal", "","", view.responseContainer);
-
-    computeSimpleElement("p", "name-and-category", `${elementData[elementType + "_name"]} | ${elementData[elementType + "_category"] !== undefined ? elementData[elementType + "_category"] : elementData[elementType + "_behavior"]}`, "",document.querySelector(".element-principal"));
-
-    computeSimpleElement("div", "img-and-other", "","", document.querySelector(".element-principal"));
-
-    computeSimpleElement("img", "", "","data:image/gif;base64," + element.imgBase64, document.querySelector(".img-and-other"));
-
-    computeSimpleElement("div", "element-stats", "","", document.querySelector(".img-and-other"));
-
-    computeSimpleElement("p", "", "Description : " + elementData[elementType + "_description"], "",document.querySelector(".element-stats"));
+    computeSimpleElement("div", "element-principal", "","", view.responseContainer,"");
+    computeSimpleElement("h1", "name-and-category", `${elementData[elementType + "_name"]} | ${elementData[elementType + "_category"] !== undefined ? elementData[elementType + "_category"] : elementData[elementType + "_behavior"]}`, "",document.querySelector(".element-principal"),"");
+    computeSimpleElement("div", "img-and-other", "","", document.querySelector(".element-principal"),"");
+    computeSimpleElement("img", "", "","data:image/gif;base64," + element.imgBase64, document.querySelector(".img-and-other"),"");
+    computeSimpleElement("div", "element-stats", "","", document.querySelector(".img-and-other"),"");
+    computeSimpleElement("p", "", "Description : " + elementData[elementType + "_description"], "",document.querySelector(".element-stats"),"");
 
     if (elementType !== "fauna") {
-        computeSimpleElement("p", "", "Débloquer par : " + elementData[elementType + "_unlock"], "",document.querySelector(".element-stats"));
+        computeSimpleElement("p", "", "Débloquer par : " + elementData[elementType + "_unlock"], "",document.querySelector(".element-stats"),"");
     }
 
     if (elementType === "building" || elementType === "transportation") {
-        computeSimpleElement("p", "", "Largeur : " + elementData[elementType + "_width"] + " m","", document.querySelector(".element-stats"));
-        computeSimpleElement("p", "", "Longueur : " + elementData[elementType + "_length"]+ " m","", document.querySelector(".element-stats"));
-        computeSimpleElement("p", "", "Hauteur : " + elementData[elementType + "_height"]+ " m", "",document.querySelector(".element-stats"));
-        computeSimpleElement("p", "", "Aire : " + elementData[elementType + "_area"]+ " m²","", document.querySelector(".element-stats"));
+        computeSimpleElement("p", "", "Largeur : " + elementData[elementType + "_width"] + " m","", document.querySelector(".element-stats"),"");
+        computeSimpleElement("p", "", "Longueur : " + elementData[elementType + "_length"]+ " m","", document.querySelector(".element-stats"),"");
+        computeSimpleElement("p", "", "Hauteur : " + elementData[elementType + "_height"]+ " m", "",document.querySelector(".element-stats"),"");
+        computeSimpleElement("p", "", "Aire : " + elementData[elementType + "_area"]+ " m²","", document.querySelector(".element-stats"),"");
         let elementPowerConso = elementData[elementType + "_category"] !== "Alimentation" ? "Consomation : " : "Génère : ";
-        computeSimpleElement("p", "", elementPowerConso + elementData[elementType + "_power"] + " MW", "", document.querySelector(".element-stats"));
+        computeSimpleElement("p", "", elementPowerConso + elementData[elementType + "_power"] + " MW", "", document.querySelector(".element-stats"),"");
     }
 
     if (elementType === "item") {
-        computeSimpleElement("p", "", "Stack de : " + elementData[elementType + "_stack"], "",document.querySelector(".element-stats"));
-        computeSimpleElement("p", "", "Point générer dans la broyeuse A.W.E.S.O.M.E. : " + elementData[elementType + "_ressources_point"], "",document.querySelector(".element-stats"));
+        computeSimpleElement("p", "", "Stack de : " + elementData[elementType + "_stack"], "",document.querySelector(".element-stats"),"");
+        computeSimpleElement("p", "", "Point générer dans la broyeuse A.W.E.S.O.M.E. : " + elementData[elementType + "_ressources_point"], "",document.querySelector(".element-stats"),"");
     }
 
     if(elementType === "fauna") {
-        computeSimpleElement("p", "", "Point de vie : " + elementData[elementType + "_life_point"], "",document.querySelector(".element-stats"));
+        computeSimpleElement("p", "", "Point de vie : " + elementData[elementType + "_life_point"], "",document.querySelector(".element-stats"),"");
         if(elementData[elementType + "_loot_size"]) {
-            computeSimpleElement("p", "", "Loot obtenue : " + elementData[elementType + "_loot_size"] + " " + elementData[elementType + "_loot_name"], "",document.querySelector(".element-stats"));
+            computeSimpleElement("p", "", "Loot obtenue : " + elementData[elementType + "_loot_size"] + " " + elementData[elementType + "_loot_name"], "",document.querySelector(".element-stats"),"");
         }
 
         for (let i = 1; i <= 3; i++) {
             const damage = elementData[`${elementType}_point_damage_${i}`];
             const damageName = elementData[`${elementType}_name_damage_${i}`];
             if (damage) {
-                computeSimpleElement("p", "", damageName + " - " + damage + " segments de dégats", "",document.querySelector(".element-stats"));
+                computeSimpleElement("p", "", damageName + " - " + damage + " segments de dégats", "",document.querySelector(".element-stats"),"");
             }
         }
 
     }
 
+    if(elementType !== "fauna"){
+        getReceipInfoById(`receip/${elementType}/${elementId}`)
+            .then((data) => {
+                if(!data.message) {
+                    computeSimpleElement("hr", "separator", "", "", view.responseContainer,"");
 
-    getReceipInfoById(`receip/item/${itemId}`)
-        .then((data) => {
-            if(!data.message) {
+                    if(elementType === "item"){
+                        data[elementType].forEach((receip,index) => {
+                            computeElementReceip(receip, elementType,index+1)
+                            computeSimpleElement("hr", "separator", "", "", view.responseContainer,"");
+                        })
+                    }
 
-                let separatorHr = document.createElement('hr');
-                separatorHr.className = "separator";
-                view.responseContainer.appendChild(separatorHr);
+                }
 
-                data.item.forEach(receip => {
-                    computeItemReceip(receip)
-                })
-            }
+            });
+    }
 
-        });
 }
 
-function computeItemReceip(receip) {
-    let receipContainerDiv = document.createElement('div');
-    receipContainerDiv.className = "receip-container";
-    view.responseContainer.appendChild(receipContainerDiv);
 
-    let receipNameP = document.createElement('p');
-    receipNameP.innerText = receip.recette + " : ";
-    receipContainerDiv.appendChild(receipNameP);
-
-    let processReceipDiv = document.createElement('div');
-    processReceipDiv.className = "process-receip";
-    receipContainerDiv.appendChild(processReceipDiv);
-
-    let receipBuildingDiv = document.createElement('div');
-    receipBuildingDiv.className = "receip-building";
-
-    let buildingNameP = document.createElement('p');
-    buildingNameP.innerText = receip.batiment;
-    receipBuildingDiv.appendChild(buildingNameP);
-
-    let buildingImg = document.createElement('img');
-    let imgOfBuilding = "";
-    getBuildingIdByName(receip.batiment)
-        .then((data) => {
-            getBuildingInfoById(data.building[0].id_building)
-                .then((data) => {
-
-                    imgOfBuilding = data.imgBase64;
-                    buildingImg.src = "data:image/gif;base64," + imgOfBuilding;
-                    receipBuildingDiv.appendChild(buildingImg);
-
-                    let buildingTimeP = document.createElement('p');
-                    buildingTimeP.innerText ="Production : " + receip.temps + " sec";
-                    receipBuildingDiv.appendChild(buildingTimeP);
-                })
-        })
-
-    let receipProductDiv = document.createElement('div');
-    receipProductDiv.className = "receip-product";
+function computeElementReceip(receip, receipType,idReceip) {
+    computeSimpleElement("div", "receip-container", "", "", view.responseContainer,"receipContainer"+idReceip);
+    computeSimpleElement("p", "", "Recette : " + receip.recette, "", document.querySelector("#receipContainer"+idReceip),0);
+    computeSimpleElement("div", "process-receip", "", "",document.querySelector("#receipContainer"+idReceip),"processReceip" + idReceip);
 
 
-    let receipProduct1P = document.createElement('p');
-    receipProduct1P.innerText = "Produit → " + receip.produit_1_nombre + " " + receip.produit_1;
-    receipProductDiv.appendChild(receipProduct1P)
-
-    if(receip.produit_2){
-        let receipProduct2P = document.createElement('p');
-        receipProduct2P.innerText = "Produit → " + receip.produit_2_nombre + " " + receip.produit_2;
-        receipProductDiv.appendChild(receipProduct2P)
+    if(receip.ingredient_1_id){
+        computeSimpleElement("div", "ingredients-group", "", "",document.querySelector("#processReceip" + idReceip),"ingredientsGroup"+idReceip);
+        getAllItemForReceip(receip,idReceip).then()
     }
 
-    let receipPrerequisDiv = document.createElement('div');
-    receipPrerequisDiv.className = "receip-prerequis";
+    if(receipType === "item") {
+        computeSimpleElement("div", "receip-building", "", "",document.querySelector("#processReceip" + idReceip),"buildingReceip"+idReceip);
+        computeSimpleElement("p", "", receip.batiment, "", document.querySelector("#buildingReceip"+idReceip),0);
 
-    for (let i = 1; i <= 3; i++) {
-        const prerequis = receip[`prerequis_${i}`];
-        if (prerequis) {
-            let receipPrerequisP = document.createElement('p');
-            receipPrerequisP.innerText = `Prérequis ${i} : ${prerequis}`;
-            receipPrerequisDiv.appendChild(receipPrerequisP);
-        }
-    }
-
-    let ingredientsGroupDiv = document.createElement('div');
-    ingredientsGroupDiv.className = "ingredients-group";
-
-    if(!receip.ingredient_1_id){
-        processReceipDiv.appendChild(receipBuildingDiv);
-        processReceipDiv.appendChild(receipProductDiv);
-        processReceipDiv.appendChild(receipPrerequisDiv);
-    }else {
-        processReceipDiv.appendChild(ingredientsGroupDiv);
-        for (let i = 1; i <= 4; i++) {
-            let receipIngredientDiv = document.createElement('div');
-            receipIngredientDiv.className = "receip-ingredient"
-
-            const ingredient = receip[`ingredient_${i}`];
-            const ingredientId = receip[`ingredient_${i}_id`];
-            if (ingredient) {
-                ingredientsGroupDiv.appendChild(receipIngredientDiv)
-                let receipIngredientP = document.createElement('p');
-                receipIngredientP.innerText = ingredient;
-                receipIngredientDiv.appendChild(receipIngredientP);
-
-                let ingredientImg = document.createElement('img');
-
-                getItemInfoById(ingredientId)
+        getBuildingIdByName(receip.batiment)
+            .then((data) => {
+                getBuildingInfoById(data.building[0].id_building)
                     .then((data) => {
+                        computeSimpleElement("img", "", "", "data:image/gif;base64," + data.imgBase64, document.querySelector("#buildingReceip"+idReceip),0);
+                        computeSimpleElement("p", "", "Production : " + receip.temps + " sec", "", document.querySelector("#buildingReceip"+idReceip),0);
+                        computeSimpleElement("div", "receip-product", "", "",document.querySelector("#processReceip" + idReceip),"productReceip"+idReceip);
+                        computeSimpleElement("p", "", "Produit → " + receip.produit_1_nombre + " " + receip.produit_1, "",document.querySelector("#productReceip"+idReceip),0);
 
-                        ingredientImg.src = "data:image/gif;base64," + data.imgBase64;
-                        receipIngredientDiv.appendChild(ingredientImg);
+                        if(receip.produit_2){
+                            computeSimpleElement("p", "", "Produit → " + receip.produit_2_nombre + " " + receip.produit_2, "",document.querySelector("#productReceip"+idReceip),0);
+                        }
 
-                        let ingredientNombreP = document.createElement('p');
-                        ingredientNombreP.innerText = receip.temps;
-                        receipIngredientDiv.appendChild(ingredientNombreP);
-
-                        processReceipDiv.appendChild(receipBuildingDiv);
-                        processReceipDiv.appendChild(receipProductDiv);
-                        if(receipPrerequisDiv.innerText !== "") {
-                            processReceipDiv.appendChild(receipPrerequisDiv);
+                        if(receip["prerequis_1"]){
+                            computeSimpleElement("div", "receip-prerequis", "", "",document.querySelector("#processReceip" + idReceip),"prerequisReceip"+idReceip);
                         }
 
 
+                        for (let i = 1; i <= 3; i++) {
+                            const prerequis = receip[`prerequis_${i}`];
+
+                            if (prerequis) {
+                                computeSimpleElement("p", "", `Prérequis ${i} : ${prerequis}`, "",document.querySelector("#prerequisReceip"+idReceip),0);
+                            }
+                        }
                     })
-
-
-            }
-        }
-
+                });
     }
+
 }
+
+
 
 async function getBuildingIdByName(name) {
     return fetch(`https://dexils.dyndns.org:58000/api/building/getBuildingIdByName/${name}`, {
@@ -548,13 +490,6 @@ async function getBuildingInfoById(id){
     });
 }
 
-async function getItemIdByName(name) {
-    return fetch(`https://dexils.dyndns.org:58000/api/item/getItemIdByName/${name}`, {
-        headers: {Authorization: `Bearer ${token}`}
-    }).then(response => {
-        return response.json();
-    });
-}
 
 async function getItemInfoById(id){
     return fetch(`https://dexils.dyndns.org:58000/api/item/getItemInfoById/${id}`, {
@@ -564,6 +499,31 @@ async function getItemInfoById(id){
     });
 }
 
+async function getAllItemForReceip(receip,receipId) {
+    let promise = []
+    let ingredientNumber = [];
+
+    for (let i = 1; i <= 5; i++) {
+
+        const ingredient = receip[`ingredient_${i}`];
+        const ingredientId = receip[`ingredient_${i}_id`];
+        if (ingredient) {
+            computeSimpleElement("div", "receip-ingredient", "", "",document.querySelector("#ingredientsGroup"+receipId),"ingredientReceip"+receipId+"-"+i);
+            computeSimpleElement("p", "", ingredient, "",document.querySelector("#ingredientReceip"+receipId+"-"+i),"");
+            ingredientNumber.push(receip[`ingredient_${i}_nombre`])
+            promise.push(getItemInfoById(ingredientId));
+
+        }
+    }
+    Promise.all(promise).then((data) => {
+        data.forEach((elem,index) => {
+            computeSimpleElement("img", "", "", "data:image/gif;base64," + elem.imgBase64 ,document.querySelector("#ingredientReceip"+receipId+"-"+(index+1)),"");
+            computeSimpleElement("p", "", ingredientNumber[index], "",document.querySelector("#ingredientReceip"+receipId+"-"+(index+1)),"");
+        })
+
+
+    })
+}
 
 
 
