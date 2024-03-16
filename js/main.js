@@ -5,6 +5,14 @@ let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJsb2dpbi
 let searchList = document.getElementById("searchList");
 let responseSearch = document.getElementById("responseSearch");
 
+// nom des elements pour alimenté la receherche
+let items;
+let itemsReceips;
+let buildings;
+let buildingsReceips;
+let faunas;
+let transportations;
+let transportationsReceips;
 
 // ### Initialisation du modèle ###
 let satisfactory = new Satisfactory();
@@ -17,8 +25,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if(localStorage.getItem("items") === null || localStorage.getItem("itemsReceips") === null || localStorage.getItem("buildings") === null || localStorage.getItem("buildingsReceips") === null || localStorage.getItem("faunas") === null || localStorage.getItem("transportations") === null || localStorage.getItem("transportationsReceips") === null) {
         getAllNamesOfAllCategoriesApi().catch((err) => console.error(err));
     }
+    // alimentation des noms
+    items = JSON.parse(localStorage.getItem("items"));
+    itemsReceips = JSON.parse(localStorage.getItem("itemsReceips"));
+    buildings = JSON.parse(localStorage.getItem("buildings"));
+    buildingsReceips = JSON.parse(localStorage.getItem("buildingsReceips"));
+    faunas = JSON.parse(localStorage.getItem("faunas"));
+    transportations = JSON.parse(localStorage.getItem("transportations"));
+    transportationsReceips = JSON.parse(localStorage.getItem("transportationsReceips"));
 })
 
+/**
+ * Récupération de tout les noms des catégories
+ * @returns {Promise<void>}
+ */
 async function getAllNamesOfAllCategoriesApi() {
     try {
         const [items,itemsReceips, buildings,buildingsReceips, faunas, transportations,transportationsReceips] = await Promise.all([
@@ -56,9 +76,6 @@ async function getAllNamesOfAllCategoriesApi() {
         throw new Error('Erreur lors de la récupération des données');
     }
 }
-
-
-
 
 /**
  * Récupération de tout les nom de la catégorie 'Items'
@@ -165,25 +182,85 @@ async function getAllReceipsNamesofTransportations() {
     });
 }
 
-// ### Initialisation des listeners ###
-// Récupération saisi du clavier via le bouton
-view.btnSearch.addEventListener("click", ()=>{
-    satisfactory.setSearch(view.searchBar.value);
+/**
+ * Récupération de l'id de l'élement via l'url donnée
+ * @param url
+ * @returns {Promise<any>}
+ */
+async function getIdElementByName(url) {
 
-});
+    return fetch(`https://dexils.dyndns.org:58000/api/${url}`, {
+        headers: {Authorization: `Bearer ${token}`}
+    }).then(response => {
+        return response.json();
+    });
+
+}
+
+/**
+ * Récupération de l'élément via l'id dans l'url donnée
+ * @param url
+ * @returns {Promise<any>}
+ */
+async function getElementInfoById(url){
+    return fetch(`https://dexils.dyndns.org:58000/api/${url}`, {
+        headers: {Authorization: `Bearer ${token}`}
+    }).then(response => {
+        return response.json();
+    });
+}
+
+/**
+ * Récupération de(s) recette(s) grace a l'id dans l'url donnée
+ * @param url
+ * @returns {Promise<any>}
+ */
+async function getReceipInfoById(url){
+    return fetch(`https://dexils.dyndns.org:58000/api/${url}`, {
+        headers: {Authorization: `Bearer ${token}`}
+    }).then(response => {
+        return response.json();
+    });
+}
+
+/**
+ * Récupération de tout les items d'une recette
+ * @param receip
+ * @param receipId
+ * @returns {Promise<void>}
+ */
+async function getAllItemForReceip(receip,receipId) {
+    let promise = []
+    let ingredientNumber = [];
+
+    for (let i = 1; i <= 5; i++) {
+
+        const ingredient = receip[`ingredient_${i}`];
+        const ingredientId = receip[`ingredient_${i}_id`];
+        if (ingredient) {
+            computeSimpleElement("div", "receip-ingredient", "", "",document.querySelector("#ingredientsGroup"+receipId),"ingredientReceip"+receipId+"-"+i);
+            computeSimpleElement("p", "", ingredient, "",document.querySelector("#ingredientReceip"+receipId+"-"+i),"");
+            ingredientNumber.push(receip[`ingredient_${i}_nombre`])
+            promise.push(getElementInfoById("item/getItemInfoById/" + ingredientId));
+
+        }
+    }
+    Promise.all(promise).then((data) => {
+        data.forEach((elem,index) => {
+            computeSimpleElement("img", "", "", "data:image/gif;base64," + elem.imgBase64 ,document.querySelector("#ingredientReceip"+receipId+"-"+(index+1)),"");
+            computeSimpleElement("p", "", ingredientNumber[index], "",document.querySelector("#ingredientReceip"+receipId+"-"+(index+1)),"");
+        })
+
+
+    })
+}
 
 // Récupération saisi du clavier pour afficher les suggestions
 view.searchBar.addEventListener("keyup", (event) => {
+    // valeur du clavier
     let input = event.target.value;
-    let items = JSON.parse(localStorage.getItem("items"));
-    let itemsReceips = JSON.parse(localStorage.getItem("itemsReceips"));
-    let buildings = JSON.parse(localStorage.getItem("buildings"));
-    let buildingsReceips = JSON.parse(localStorage.getItem("buildingsReceips"));
-    let faunas = JSON.parse(localStorage.getItem("faunas"));
-    let transportations = JSON.parse(localStorage.getItem("transportations"));
-    let transportationsReceips = JSON.parse(localStorage.getItem("transportationsReceips"));
 
-
+    //Récupération des noms contenant la valeur de input
     let resultItems = items.filter(item => item.nom_item.toLowerCase().includes(input.toLowerCase()));
     let resultItemsReceip =  itemsReceips.filter(item => item.recette_item.toLowerCase().includes(input.toLowerCase()));
     let resultBuildings = buildings.filter(building => building.nom_batiment.toLowerCase().includes(input.toLowerCase()));
@@ -197,7 +274,6 @@ view.searchBar.addEventListener("keyup", (event) => {
 
     switch (input.toLowerCase()) {
         case "":
-
             break
         case "item":
             computeSeachList(resultItems, "nom_item", "Item", items);
@@ -269,30 +345,53 @@ view.searchBar.addEventListener("keyup", (event) => {
             getIdElementByName(url)
                 .then((data) => {
 
+                    // Récupération des information des éléments en fonction de la catégorie qu'il appartient
                     if(data['item']) {
                         url = "item/getItemInfoById/" + data['item'][0].id_item;
-                        getElementInfoById(url).then(item => computeInfoElement(item, data['item'][0].id_item, "item"))
+                        satisfactory.setCurrentElementId(data['item'][0].id_item);
+                        satisfactory.setCurrentElementType("item");
+                        getElementInfoById(url).then(item => {
+                            satisfactory.setCurrentElement(item);
+                            computeInfoElement(item, data['item'][0].id_item, "item")
+                        })
                     } else if(data['building']) {
                         url = "building/getBuildingInfoById/" + data['building'][0].id_building;
-                        getElementInfoById(url).then(building => computeInfoElement(building, data['building'][0].id_building, "building"))
+                        satisfactory.setCurrentElementId(data['building'][0].id_building);
+                        satisfactory.setCurrentElementType("building");
+                        getElementInfoById(url).then(building => {
+                            satisfactory.setCurrentElement(building);
+                            computeInfoElement(building, data['building'][0].id_building, "building")
+                        })
                     }else if(data['fauna']) {
                         url = "fauna/getFaunaInfoById/" + data['fauna'][0].id_fauna;
-                        getElementInfoById(url).then(fauna => computeInfoElement(fauna, data['fauna'][0].id_fauna, "fauna"))
+                        satisfactory.setCurrentElementId(data['fauna'][0].id_fauna);
+                        satisfactory.setCurrentElementType("fauna");
+                        getElementInfoById(url).then(fauna => {
+                            satisfactory.setCurrentElement(fauna);
+                            computeInfoElement(fauna, data['fauna'][0].id_fauna, "fauna")
+                        })
                     }else if(data['transportation']){
                         url = "transportation/getTransportationInfoById/" + data['transportation'][0].id_transportation;
-                        getElementInfoById(url).then(transportation => computeInfoElement(transportation, data['transportation'][0].id_transportation, "transportation"))
-
+                        satisfactory.setCurrentElementId(data['transportation'][0].id_transportation);
+                        satisfactory.setCurrentElementType("transportation");
+                        getElementInfoById(url).then(transportation => {
+                            satisfactory.setCurrentElement(transportation);
+                            computeInfoElement(transportation, data['transportation'][0].id_transportation, "transportation")
+                        })
                     }
                 });
-
-               
-                
         });
     });
 
 })
 
-// Création de l'élément li pour alimenter la liste de suggestions
+/**
+ * Création de l'élément li pour alimenter la liste de suggestions
+ * @param result
+ * @param name
+ * @param category
+ * @param allResult
+ */
 function computeSeachList(result, name, category, allResult = []) {
     if(allResult.length === 0) {
         result.forEach(elem =>{
@@ -316,39 +415,22 @@ function computeSeachList(result, name, category, allResult = []) {
 
 }
 
-async function getIdElementByName(url) {
-    
-    return fetch(`https://dexils.dyndns.org:58000/api/${url}`, {
-        headers: {Authorization: `Bearer ${token}`}
-    }).then(response => {
-        return response.json();
-    });
-        
-}
-
-async function getElementInfoById(url){
-    return fetch(`https://dexils.dyndns.org:58000/api/${url}`, {
-        headers: {Authorization: `Bearer ${token}`}
-    }).then(response => {
-        return response.json();
-    });
-}
-
-async function getReceipInfoById(url){
-    return fetch(`https://dexils.dyndns.org:58000/api/${url}`, {
-        headers: {Authorization: `Bearer ${token}`}
-    }).then(response => {
-        return response.json();
-    });
-}
-
+/**
+ * Création d'un element html dynamique
+ * @param typeElement
+ * @param classElement
+ * @param textElement
+ * @param srcElemennt
+ * @param parentElement
+ * @param idParentElement
+ */
 function computeSimpleElement(typeElement,classElement, textElement, srcElemennt, parentElement, idParentElement) {
     let simpleElement = document.createElement(typeElement);
     if(classElement !== ""){
         simpleElement.className = classElement;
     }
     if(textElement !== "") {
-        simpleElement.innerText = textElement;
+        simpleElement.innerHTML = textElement;
     }
     if(srcElemennt !== ""){
         simpleElement.src = srcElemennt;
@@ -358,6 +440,13 @@ function computeSimpleElement(typeElement,classElement, textElement, srcElemennt
     }
     parentElement.appendChild(simpleElement);
 }
+
+/**
+ * Création du résumé de l'élément
+ * @param element
+ * @param elementId
+ * @param elementType
+ */
 function computeInfoElement(element, elementId, elementType) {
     let elementData = element[elementType][0];
 
@@ -365,41 +454,49 @@ function computeInfoElement(element, elementId, elementType) {
     view.responseContainer.innerText = "";
 
     computeSimpleElement("div", "element-principal", "","", view.responseContainer,"");
-    computeSimpleElement("h1", "name-and-category", `${elementData[elementType + "_name"]} | ${elementData[elementType + "_category"] !== undefined ? elementData[elementType + "_category"] : elementData[elementType + "_behavior"]}`, "",document.querySelector(".element-principal"),"");
+    let categoryElement;
+    if(elementData[elementType + "_category"] !== undefined){
+        categoryElement = `<i class="fa-solid fa-box-archive"></i> ${elementData[elementType + "_category"]}`;
+    } else {
+        categoryElement = `<i class="fa-solid fa-face-smile-beam"></i> ${elementData[elementType + "_behavior"]}`;
+    }
+
+    computeSimpleElement("h1", "name-and-category", `${elementData[elementType + "_name"]} |${categoryElement}`, "",document.querySelector(".element-principal"),"");
+    computeSimpleElement("i", "fa-solid fa-thumbtack", "", "",document.querySelector(".name-and-category"), "favoriteBtn");
     computeSimpleElement("div", "img-and-other", "","", document.querySelector(".element-principal"),"");
     computeSimpleElement("img", "", "","data:image/gif;base64," + element.imgBase64, document.querySelector(".img-and-other"),"");
     computeSimpleElement("div", "element-stats", "","", document.querySelector(".img-and-other"),"");
-    computeSimpleElement("p", "", "Description : " + elementData[elementType + "_description"], "",document.querySelector(".element-stats"),"");
+    computeSimpleElement("p", "", "<i class=\"fa-solid fa-book\"></i> Description : " + elementData[elementType + "_description"], "",document.querySelector(".element-stats"),"");
 
     if (elementType !== "fauna") {
-        computeSimpleElement("p", "", "Débloquer par : " + elementData[elementType + "_unlock"], "",document.querySelector(".element-stats"),"");
+        computeSimpleElement("p", "", "<i class=\"fa-solid fa-lock\"></i> : " + elementData[elementType + "_unlock"], "",document.querySelector(".element-stats"),"");
     }
 
     if (elementType === "building" || elementType === "transportation") {
-        computeSimpleElement("p", "", "Largeur : " + elementData[elementType + "_width"] + " m","", document.querySelector(".element-stats"),"");
-        computeSimpleElement("p", "", "Longueur : " + elementData[elementType + "_length"]+ " m","", document.querySelector(".element-stats"),"");
-        computeSimpleElement("p", "", "Hauteur : " + elementData[elementType + "_height"]+ " m", "",document.querySelector(".element-stats"),"");
-        computeSimpleElement("p", "", "Aire : " + elementData[elementType + "_area"]+ " m²","", document.querySelector(".element-stats"),"");
-        let elementPowerConso = elementData[elementType + "_category"] !== "Alimentation" ? "Consomation : " : "Génère : ";
+        computeSimpleElement("p", "", "<i class=\"fa-solid fa-up-right-and-down-left-from-center\"></i> Largeur : " + elementData[elementType + "_width"] + " m","", document.querySelector(".element-stats"),"");
+        computeSimpleElement("p", "", "<i class=\"fa-solid fa-arrows-left-right\"></i> Longueur : " + elementData[elementType + "_length"]+ " m","", document.querySelector(".element-stats"),"");
+        computeSimpleElement("p", "", "<i class=\"fa-solid fa-arrows-up-down\"></i> Hauteur : " + elementData[elementType + "_height"]+ " m", "",document.querySelector(".element-stats"),"");
+        computeSimpleElement("p", "", "<i class=\"fa-solid fa-chart-area\"></i> Aire : " + elementData[elementType + "_area"]+ " m²","", document.querySelector(".element-stats"),"");
+        let elementPowerConso = elementData[elementType + "_category"] !== "Alimentation" ? "<i class=\"fa-solid fa-bolt\"></i> Consomation : " : "<i class=\"fa-solid fa-bolt\"></i> Génère : ";
         computeSimpleElement("p", "", elementPowerConso + elementData[elementType + "_power"] + " MW", "", document.querySelector(".element-stats"),"");
     }
 
     if (elementType === "item") {
-        computeSimpleElement("p", "", "Stack de : " + elementData[elementType + "_stack"], "",document.querySelector(".element-stats"),"");
-        computeSimpleElement("p", "", "Point générer dans la broyeuse A.W.E.S.O.M.E. : " + elementData[elementType + "_ressources_point"], "",document.querySelector(".element-stats"),"");
+        computeSimpleElement("p", "", "<i class=\"fa-solid fa-layer-group\"></i> Stack de : " + elementData[elementType + "_stack"], "",document.querySelector(".element-stats"),"");
+        computeSimpleElement("p", "", "<i class=\"fa-solid fa-circle-info\"></i> Point générer dans la broyeuse A.W.E.S.O.M.E. : " + elementData[elementType + "_ressources_point"], "",document.querySelector(".element-stats"),"");
     }
 
     if(elementType === "fauna") {
-        computeSimpleElement("p", "", "Point de vie : " + elementData[elementType + "_life_point"], "",document.querySelector(".element-stats"),"");
+        computeSimpleElement("p", "", "<i class=\"fa-solid fa-heart\"></i> : " + elementData[elementType + "_life_point"], "",document.querySelector(".element-stats"),"");
         if(elementData[elementType + "_loot_size"]) {
-            computeSimpleElement("p", "", "Loot obtenue : " + elementData[elementType + "_loot_size"] + " " + elementData[elementType + "_loot_name"], "",document.querySelector(".element-stats"),"");
+            computeSimpleElement("p", "", "<i class=\"fa-solid fa-sack-xmark\"></i> Loot obtenue : " + elementData[elementType + "_loot_size"] + " " + elementData[elementType + "_loot_name"], "",document.querySelector(".element-stats"),"");
         }
 
         for (let i = 1; i <= 3; i++) {
             const damage = elementData[`${elementType}_point_damage_${i}`];
             const damageName = elementData[`${elementType}_name_damage_${i}`];
             if (damage) {
-                computeSimpleElement("p", "", damageName + " - " + damage + " segments de dégats", "",document.querySelector(".element-stats"),"");
+                computeSimpleElement("p", "", '<i class="fa-solid fa-burst"></i> ' + damageName + " - " + damage + " segments de dégats", "",document.querySelector(".element-stats"),"");
             }
         }
 
@@ -411,10 +508,18 @@ function computeInfoElement(element, elementId, elementType) {
                 if(!data.message) {
                     computeSimpleElement("hr", "separator", "", "", view.responseContainer,"");
 
-                    if(elementType === "item"){
+                    if(elementType !== "fauna"){
                         data[elementType].forEach((receip,index) => {
-                            computeElementReceip(receip, elementType,index+1)
-                            computeSimpleElement("hr", "separator", "", "", view.responseContainer,"");
+                            if(index !== 0 ){
+                                computeElementReceip(receip, elementType,index+1,"alternative")
+                            }else {
+                                computeElementReceip(receip, elementType,index+1,"")
+                            }
+
+                            if(index + 1 !== data[elementType].length){
+                                computeSimpleElement("hr", "separator", "", "", view.responseContainer,"");
+                            }
+
                         })
                     }
 
@@ -425,104 +530,72 @@ function computeInfoElement(element, elementId, elementType) {
 
 }
 
-
-function computeElementReceip(receip, receipType,idReceip) {
+/**
+ * Création de la recette de l'élément
+ * @param receip
+ * @param receipType
+ * @param idReceip
+ * @param alternativeReceip
+ */
+function computeElementReceip(receip, receipType,idReceip,alternativeReceip) {
     computeSimpleElement("div", "receip-container", "", "", view.responseContainer,"receipContainer"+idReceip);
-    computeSimpleElement("p", "", "Recette : " + receip.recette, "", document.querySelector("#receipContainer"+idReceip),0);
+    computeSimpleElement("div", "receip-name-and-favorite", "", "", document.querySelector("#receipContainer"+idReceip),"receipNameAndFavorite"+idReceip);
+    computeSimpleElement("p", "", "<i class=\"fa-solid fa-receipt\"></i> Recette " + alternativeReceip + " : " + receip.recette, "", document.querySelector("#receipNameAndFavorite"+idReceip),"");
+    if(alternativeReceip !== "") {
+        computeSimpleElement("i", "fa-solid fa-thumbtack", "", "",document.querySelector("#receipNameAndFavorite"+idReceip), "favoriteBtn");
+    }
     computeSimpleElement("div", "process-receip", "", "",document.querySelector("#receipContainer"+idReceip),"processReceip" + idReceip);
 
 
     if(receip.ingredient_1_id){
         computeSimpleElement("div", "ingredients-group", "", "",document.querySelector("#processReceip" + idReceip),"ingredientsGroup"+idReceip);
+        if(receipType !== "item") {
+            document.querySelector(".ingredients-group").style.width = "50dvw";
+
+        }
         getAllItemForReceip(receip,idReceip).then()
     }
 
     if(receipType === "item") {
         computeSimpleElement("div", "receip-building", "", "",document.querySelector("#processReceip" + idReceip),"buildingReceip"+idReceip);
-        computeSimpleElement("p", "", receip.batiment, "", document.querySelector("#buildingReceip"+idReceip),0);
+        computeSimpleElement("p", "", receip.batiment, "", document.querySelector("#buildingReceip"+idReceip),"");
 
-        getBuildingIdByName(receip.batiment)
+        getIdElementByName("building/getBuildingIdByName/" + receip.batiment)
             .then((data) => {
-                getBuildingInfoById(data.building[0].id_building)
+                getElementInfoById("building/getBuildingInfoById/" + data.building[0].id_building)
                     .then((data) => {
-                        computeSimpleElement("img", "", "", "data:image/gif;base64," + data.imgBase64, document.querySelector("#buildingReceip"+idReceip),0);
-                        computeSimpleElement("p", "", "Production : " + receip.temps + " sec", "", document.querySelector("#buildingReceip"+idReceip),0);
-                        computeSimpleElement("div", "receip-product", "", "",document.querySelector("#processReceip" + idReceip),"productReceip"+idReceip);
-                        computeSimpleElement("p", "", "Produit → " + receip.produit_1_nombre + " " + receip.produit_1, "",document.querySelector("#productReceip"+idReceip),0);
+                        computeSimpleElement("img", "", "", "data:image/gif;base64," + data.imgBase64, document.querySelector("#buildingReceip"+idReceip),"");
+                        computeSimpleElement("p", "", "Production : " + receip.temps + " sec", "", document.querySelector("#buildingReceip"+idReceip),"");
+                        computeSimpleElement("div", "product-and-prerequis", "","",document.querySelector("#processReceip" + idReceip), "productAndPrerequis"+idReceip);
+                        computeSimpleElement("div", "receip-product", "", "",document.querySelector("#productAndPrerequis"+idReceip),"productReceip"+idReceip);
+                        computeSimpleElement("p", "", "Produit → " + receip.produit_1_nombre + " " + receip.produit_1, "",document.querySelector("#productReceip"+idReceip),"");
 
                         if(receip.produit_2){
-                            computeSimpleElement("p", "", "Produit → " + receip.produit_2_nombre + " " + receip.produit_2, "",document.querySelector("#productReceip"+idReceip),0);
+                            computeSimpleElement("p", "", "Produit → " + receip.produit_2_nombre + " " + receip.produit_2, "",document.querySelector("#productReceip"+idReceip),"");
                         }
 
                         if(receip["prerequis_1"]){
-                            computeSimpleElement("div", "receip-prerequis", "", "",document.querySelector("#processReceip" + idReceip),"prerequisReceip"+idReceip);
-                        }
+                            computeSimpleElement("hr", "seperator","","",document.querySelector("#productAndPrerequis"+idReceip),"")
+                            computeSimpleElement("div", "receip-prerequis", "", "",document.querySelector("#productAndPrerequis"+idReceip),"prerequisReceip"+idReceip);
 
+                            for (let i = 1; i <= 3; i++) {
+                                const prerequis = receip[`prerequis_${i}`];
 
-                        for (let i = 1; i <= 3; i++) {
-                            const prerequis = receip[`prerequis_${i}`];
-
-                            if (prerequis) {
-                                computeSimpleElement("p", "", `Prérequis ${i} : ${prerequis}`, "",document.querySelector("#prerequisReceip"+idReceip),0);
+                                if (prerequis) {
+                                    computeSimpleElement("p", "", `Prérequis ${i} : ${prerequis}`, "",document.querySelector("#prerequisReceip"+idReceip),"");
+                                }
                             }
                         }
+
+
                     })
-                });
+            });
     }
 
-}
 
 
 
-async function getBuildingIdByName(name) {
-    return fetch(`https://dexils.dyndns.org:58000/api/building/getBuildingIdByName/${name}`, {
-        headers: {Authorization: `Bearer ${token}`}
-    }).then(response => {
-        return response.json();
-    });
-}
 
-async function getBuildingInfoById(id){
-    return fetch(`https://dexils.dyndns.org:58000/api/building/getBuildingInfoById/${id}`, {
-        headers: {Authorization: `Bearer ${token}`}
-    }).then(response => {
-        return response.json();
-    });
-}
-
-
-async function getItemInfoById(id){
-    return fetch(`https://dexils.dyndns.org:58000/api/item/getItemInfoById/${id}`, {
-        headers: {Authorization: `Bearer ${token}`}
-    }).then(response => {
-        return response.json();
-    });
-}
-
-async function getAllItemForReceip(receip,receipId) {
-    let promise = []
-    let ingredientNumber = [];
-
-    for (let i = 1; i <= 5; i++) {
-
-        const ingredient = receip[`ingredient_${i}`];
-        const ingredientId = receip[`ingredient_${i}_id`];
-        if (ingredient) {
-            computeSimpleElement("div", "receip-ingredient", "", "",document.querySelector("#ingredientsGroup"+receipId),"ingredientReceip"+receipId+"-"+i);
-            computeSimpleElement("p", "", ingredient, "",document.querySelector("#ingredientReceip"+receipId+"-"+i),"");
-            ingredientNumber.push(receip[`ingredient_${i}_nombre`])
-            promise.push(getItemInfoById(ingredientId));
-
-        }
-    }
-    Promise.all(promise).then((data) => {
-        data.forEach((elem,index) => {
-            computeSimpleElement("img", "", "", "data:image/gif;base64," + elem.imgBase64 ,document.querySelector("#ingredientReceip"+receipId+"-"+(index+1)),"");
-            computeSimpleElement("p", "", ingredientNumber[index], "",document.querySelector("#ingredientReceip"+receipId+"-"+(index+1)),"");
-        })
-
-
-    })
 }
 
 

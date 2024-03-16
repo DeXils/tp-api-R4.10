@@ -16,4 +16,7 @@ const view = {
 
     // Conteneur de la réponse 
     responseContainer: document.getElementById("responseContainer"),
+
+    //list des favori
+    favoriteList: document.querySelectorAll(".favorite-content > ul")
 };

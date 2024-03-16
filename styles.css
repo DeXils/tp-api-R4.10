@@ -83,6 +83,7 @@ li {
   flex-direction: column;
   height: 10dvh;
   font-size: 1.3em;
+  width: 100%;
 }
 
 .search-body input {
@@ -94,7 +95,7 @@ li {
   background-color: #333333;
   color: #E59345;
   font-size: 1.3em;
-  width: calc(100dvw - 25dvw - 162px);
+
 }
 
 .search-body hr {
@@ -167,6 +168,11 @@ li {
   margin:10px;
 }
 
+.name-and-category > i {
+  padding: 0 5px;
+}
+
+
 .img-and-other {
   display: flex;
   margin:10px;
@@ -199,7 +205,7 @@ li {
   flex-direction: column;
   font-size: 1.5em;
 }
-.receip-container p {
+.receip-container  p {
   margin: 15px;
 }
 .process-receip {
@@ -217,13 +223,22 @@ li {
   width: 10dvw;
 }
 
+.receip-ingredient > img {
+  width: 7dvw;
+}
+
+.receip-ingredient > p {
+  text-align: center;
+}
+
 .receip-building img {
   padding: 20px;
   width: 10dvw;
 }
 
 .receip-product,
-.receip-prerequis {
+.receip-prerequis,
+.product-and-prerequis {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -231,16 +246,33 @@ li {
 
 .ingredients-group {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   padding: 10px;
+  width: 40dvw;
 }
 
 .receip-building,
 .ingredients-group,
-.receip-product,
-.receip-prerequis {
+.product-and-prerequis {
   margin: 10px;
   border: #4D4D4D solid 2px;
   border-radius: 10px;
   background-color: #222126;
+}
+
+.product-and-prerequis > hr{
+  margin: 5px;
+}
+
+.receip-name-and-favorite {
+  display: flex;
+  align-items: center;
+}
+
+.receip-name-and-favorite > i,
+.name-and-category > i:last-child {
+  transform: rotate(45deg);
+  cursor: pointer;
 }
