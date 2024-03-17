@@ -45,6 +45,12 @@ main {
   overflow: auto;
 }
 
+.favorite-content > p {
+  text-align: center;
+  margin: 10px 0;
+  font-size: 1.5em;
+}
+
 hr {
   border: #3E3A2E solid 2px;
 
@@ -52,7 +58,15 @@ hr {
 
 li {
   list-style: none;
+  font-size: 1.3em;
+  padding: 10px 5px;
+  cursor: pointer;
 }
+
+li:hover {
+  background-color: #E59345;
+}
+
 
 .search-content {
   background-image: url('./images/patern.png');
@@ -233,6 +247,10 @@ li {
   text-align: center;
 }
 
+.receip-building {
+  width: 20dvw;
+}
+
 .receip-building img {
   padding: 20px;
   width: 10dvw;
@@ -264,7 +282,12 @@ li {
   background-color: #222126;
 }
 
+.product-and-prerequis {
+  width: 30dvw;
+}
+
 .product-and-prerequis > hr{
+  border-color: #E59345;
   margin: 5px;
 }
 

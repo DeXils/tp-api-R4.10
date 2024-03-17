@@ -100,8 +100,16 @@ class Satisfactory {
         return this._currentElementType;
     }
 
-    setFavorite(element, elementId, elementType) {
-        this._favoriteLists.push({element: element, elementId: elementId, elementType: elementType});
+    setFavoriteList(favoriteList) {
+        this._favoriteLists = favoriteList;
+    }
+
+    setFavorite(favoriteId, element, elementId, elementType) {
+        this._favoriteLists.push({favoriteId:favoriteId,element: element, elementId: elementId, elementType: elementType});
+    }
+
+    getFavorites() {
+        return this._favoriteLists;
     }
 
 }

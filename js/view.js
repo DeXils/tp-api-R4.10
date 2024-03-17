@@ -18,5 +18,5 @@ const view = {
     responseContainer: document.getElementById("responseContainer"),
 
     //list des favori
-    favoriteList: document.querySelectorAll(".favorite-content > ul")
+    favoriteListContainer: document.getElementById("favoriteList"),
 };

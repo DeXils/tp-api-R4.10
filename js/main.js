@@ -14,6 +14,9 @@ let transportations;
 let transportationsReceips;
 let errors;
 
+// Récupération de tous les element HTML lié au favoris
+let favoritesList;
+
 // ### Initialisation du modèle ###
 let satisfactory = new Satisfactory();
 
@@ -26,6 +29,26 @@ document.addEventListener("DOMContentLoaded", () => {
         getAllNamesOfAllCategoriesApi().then(() => getElementInLocalStorage());
     } else {
         getElementInLocalStorage();
+    }
+
+    if(localStorage.getItem("favoris") !== null ){
+        satisfactory.setFavoriteList(JSON.parse(localStorage.getItem("favoris")));
+        updateFavoriteList();
+        favoritesList = document.querySelectorAll(".favorite-element")
+
+        favoritesList.forEach((favorite)=> {
+            favorite.addEventListener("click", (event) => {
+                let favorites = JSON.parse(localStorage.getItem("favoris"));
+                console.log(favorites)
+                favorites.forEach((element) => {
+                    if(element.favoriteId === event.target.id) {
+                        console.log(element)
+                        computeInfoElement(element['element'],element['elementId'],element['elementType'])
+                    }
+                })
+            })
+        })
+
     }
 })
 
@@ -518,6 +541,7 @@ function computeInfoElement(element, elementId, elementType) {
 
     computeSimpleElement("h1", "name-and-category", `${elementData[elementType + "_name"]} |${categoryElement}`, "", document.querySelector(".element-principal"), "");
     computeSimpleElement("i", "fa-solid fa-thumbtack", "", "", document.querySelector(".name-and-category"), "favoriteBtn");
+    addToFavorite(document.getElementById("favoriteBtn"),element,elementId,elementType,elementData[elementType + "_name"]);
     computeSimpleElement("div", "img-and-other", "", "", document.querySelector(".element-principal"), "");
     computeSimpleElement("img", "", "", "data:image/gif;base64," + element.imgBase64, document.querySelector(".img-and-other"), "");
     computeSimpleElement("div", "element-stats", "", "", document.querySelector(".img-and-other"), "");
@@ -567,7 +591,7 @@ function computeInfoElement(element, elementId, elementType) {
 
                     if (elementType !== "fauna") {
                         data[elementType].forEach((receip, index) => {
-                            if (index !== 0) {
+                            if (receip.recette_alternative) {
                                 computeElementReceip(receip, elementType, index + 1, "alternative")
                             } else {
                                 computeElementReceip(receip, elementType, index + 1, "")
@@ -588,6 +612,8 @@ function computeInfoElement(element, elementId, elementType) {
             });
     }
 
+    //addToFavorite(element,elementId,elementType);
+
 }
 
 /**
@@ -602,7 +628,10 @@ function computeElementReceip(receip, receipType, idReceip, alternativeReceip) {
     computeSimpleElement("div", "receip-name-and-favorite", "", "", document.querySelector("#receipContainer" + idReceip), "receipNameAndFavorite" + idReceip);
     computeSimpleElement("p", "", "<i class=\"fa-solid fa-receipt\"></i> Recette " + alternativeReceip + " : " + receip.recette, "", document.querySelector("#receipNameAndFavorite" + idReceip), "");
     if (alternativeReceip !== "") {
-        computeSimpleElement("i", "fa-solid fa-thumbtack", "", "", document.querySelector("#receipNameAndFavorite" + idReceip), "favoriteBtn");
+        computeSimpleElement("i", "fa-solid fa-thumbtack", "", "", document.querySelector("#receipNameAndFavorite" + idReceip), "favoriteBtn"+idReceip);
+
+        console.log(satisfactory.getCurrentElement())
+        addToFavorite(document.getElementById("favoriteBtn"+idReceip),satisfactory.getCurrentElement(),satisfactory.getCurrentElementId(),satisfactory.getCurrentElementType(),receip.recette);
     }
     computeSimpleElement("div", "process-receip", "", "", document.querySelector("#receipContainer" + idReceip), "processReceip" + idReceip);
 
@@ -654,4 +683,64 @@ function computeElementReceip(receip, receipType, idReceip, alternativeReceip) {
                     })
             });
     }
+
+
 }
+
+/**
+ * Ajoute l'élément au favoris
+ * @param currentFavoriteBtn
+ * @param element
+ * @param elementId
+ * @param elementType
+ */
+function addToFavorite(currentFavoriteBtn,element,elementId,elementType, elementName) {
+    currentFavoriteBtn.addEventListener("click", (event)=> {
+        console.log(elementName)
+        let favoriteId = elementName;
+        favoriteId = favoriteId.replace(/ /g, "-");
+
+        checkIfElmentInLocalStorage({favoriteId:favoriteId,element:element,elementId:elementId,elementType:elementType});
+        updateFavoriteList();
+        })
+}
+
+/**
+ * Regarde si l'élément est identique avec un élement présent dans le localStorage
+ * @param allElement
+ */
+function checkIfElmentInLocalStorage(allElement) {
+    const favorites = JSON.parse(localStorage.getItem("favoris"));
+    console.log(allElement)
+    let favoriteId = allElement.favoriteId
+
+    if (favorites) {
+        let isPresent;
+        favorites.forEach((element) => {
+            if(element.favoriteId === favoriteId) {
+                isPresent = true;
+            }else {
+                isPresent = false
+            }
+        });
+        if (!isPresent) {
+            satisfactory.setFavorite(favoriteId, allElement["element"], allElement["elementId"], allElement["elementType"]);
+            localStorage.setItem("favoris",JSON.stringify(satisfactory.getFavorites()));
+        }
+    } else {
+        satisfactory.setFavorite(favoriteId, allElement["element"], allElement["elementId"], allElement["elementType"]);
+        localStorage.setItem("favoris",JSON.stringify(satisfactory.getFavorites()));
+    }
+}
+
+/**
+ * Met à jour la list des favoris
+ */
+function updateFavoriteList(){
+    view.favoriteListContainer.innerText = "";
+    satisfactory.getFavorites().forEach((favorite) => {
+
+        computeSimpleElement("li", "favorite-element",favorite.favoriteId.replace(/-/g, " "),"",view.favoriteListContainer,favorite.favoriteId);
+    })
+}
+
