@@ -3,6 +3,13 @@
  * (Modèle représentant la recherche effectué)
  */
 class Satisfactory {
+
+    /**
+     * Token d'intentification
+     * @type {String}
+     */
+    _token;
+
     /**
      * Expression actuelle de la recherche.
      * @type {String}
@@ -43,9 +50,16 @@ class Satisfactory {
         this._currentElement = {};
         this._currentElementType = "";
         this._currentElementId = 0;
-
+        this._token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJsb2dpbiI6IkRlWGlscyIsImV4cCI6MTcxMjgyNjg2OCwiaWF0IjoxNzEwMjM0ODY4fQ.Z6oOlkJb1xTqNCgkPBDL8ZjG0UlxNLXwj_WAYfmll9U";
     }
 
+    /**
+     * Retourne le token d'identification
+     * @returns {String}
+     */
+    getToken() {
+        return this._token;
+    }
     /**
      * Retourne l'expression actuelle de la recherche.
      * @returns {string}
