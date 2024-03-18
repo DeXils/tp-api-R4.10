@@ -35,21 +35,26 @@ document.addEventListener("DOMContentLoaded", () => {
         satisfactory.setFavoriteList(JSON.parse(localStorage.getItem("favoris")));
         updateFavoriteList();
         favoritesList = document.querySelectorAll(".favorite-element")
-
+        
+        /*//Gestion du click
         favoritesList.forEach((favorite)=> {
             favorite.addEventListener("click", (event) => {
+                console.log(event.target)
                 let favorites = JSON.parse(localStorage.getItem("favoris"));
                 console.log(favorites)
                 favorites.forEach((element) => {
                     if(element.favoriteId === event.target.id) {
                         console.log(element)
+                        checkIfElmentInLocalStorage(element)
                         computeInfoElement(element['element'],element['elementId'],element['elementType'])
+                        
                     }
                 })
             })
-        })
-
+        })*/
     }
+
+    
 })
 
 /**
@@ -332,7 +337,7 @@ view.searchBar.addEventListener("keyup", (event) => {
             computeSeachList(resultTransportationsReceip, "recette_transportation", "Recette de transport", transportationsReceips);
             break;
         case "error":
-            computeSeachList(resultErrors, "error_name", "Error", errors)
+            computeSeaconsolechList(resultErrors, "error_name", "Error", errors)
             break
         default:
             computeSeachList(resultItems, "nom_item", "Item");
@@ -630,7 +635,7 @@ function computeElementReceip(receip, receipType, idReceip, alternativeReceip) {
     if (alternativeReceip !== "") {
         computeSimpleElement("i", "fa-solid fa-thumbtack", "", "", document.querySelector("#receipNameAndFavorite" + idReceip), "favoriteBtn"+idReceip);
 
-        console.log(satisfactory.getCurrentElement())
+        //console.log(satisfactory.getCurrentElement())
         addToFavorite(document.getElementById("favoriteBtn"+idReceip),satisfactory.getCurrentElement(),satisfactory.getCurrentElementId(),satisfactory.getCurrentElementType(),receip.recette);
     }
     computeSimpleElement("div", "process-receip", "", "", document.querySelector("#receipContainer" + idReceip), "processReceip" + idReceip);
@@ -695,11 +700,10 @@ function computeElementReceip(receip, receipType, idReceip, alternativeReceip) {
  * @param elementType
  */
 function addToFavorite(currentFavoriteBtn,element,elementId,elementType, elementName) {
-    currentFavoriteBtn.addEventListener("click", (event)=> {
-        console.log(elementName)
+    currentFavoriteBtn.addEventListener("click", ()=> {
+        //console.log(satisfactory.getFavorites())
         let favoriteId = elementName;
         favoriteId = favoriteId.replace(/ /g, "-");
-
         checkIfElmentInLocalStorage({favoriteId:favoriteId,element:element,elementId:elementId,elementType:elementType});
         updateFavoriteList();
         })
@@ -711,17 +715,12 @@ function addToFavorite(currentFavoriteBtn,element,elementId,elementType, element
  */
 function checkIfElmentInLocalStorage(allElement) {
     const favorites = JSON.parse(localStorage.getItem("favoris"));
-    console.log(allElement)
     let favoriteId = allElement.favoriteId
 
     if (favorites) {
         let isPresent;
-        favorites.forEach((element) => {
-            if(element.favoriteId === favoriteId) {
-                isPresent = true;
-            }else {
-                isPresent = false
-            }
+        isPresent = favorites.find((element) => {
+            return element.favoriteId === favoriteId;
         });
         if (!isPresent) {
             satisfactory.setFavorite(favoriteId, allElement["element"], allElement["elementId"], allElement["elementType"]);
@@ -739,8 +738,24 @@ function checkIfElmentInLocalStorage(allElement) {
 function updateFavoriteList(){
     view.favoriteListContainer.innerText = "";
     satisfactory.getFavorites().forEach((favorite) => {
-
         computeSimpleElement("li", "favorite-element",favorite.favoriteId.replace(/-/g, " "),"",view.favoriteListContainer,favorite.favoriteId);
     })
 }
+
+view.favoriteListContainer.addEventListener("click", (event) => {
+    if (event.target.classList.contains("favorite-element")) {
+        // Si un élément de la liste des favoris est cliqué
+        const favoriteId = event.target.id;
+        const favorites = JSON.parse(localStorage.getItem("favoris"));
+        
+        // Recherchez l'élément correspondant dans le tableau des favoris
+        const clickedFavorite = favorites.find((element) => element.favoriteId === favoriteId);
+
+        // Exécutez l'action correspondante pour l'élément cliqué
+        if (clickedFavorite) {
+            checkIfElmentInLocalStorage(clickedFavorite);
+            computeInfoElement(clickedFavorite.element, clickedFavorite.elementId, clickedFavorite.elementType);
+        }
+    }
+});
 
