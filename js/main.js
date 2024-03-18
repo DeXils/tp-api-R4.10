@@ -337,7 +337,7 @@ view.searchBar.addEventListener("keyup", (event) => {
             computeSeachList(resultTransportationsReceip, "recette_transportation", "Recette de transport", transportationsReceips);
             break;
         case "error":
-            computeSeaconsolechList(resultErrors, "error_name", "Error", errors)
+            computeSeachList(resultErrors, "error_name", "Error", errors)
             break
         default:
             computeSeachList(resultItems, "nom_item", "Item");
@@ -725,6 +725,16 @@ function checkIfElmentInLocalStorage(allElement) {
         if (!isPresent) {
             satisfactory.setFavorite(favoriteId, allElement["element"], allElement["elementId"], allElement["elementType"]);
             localStorage.setItem("favoris",JSON.stringify(satisfactory.getFavorites()));
+        }else {
+            favorites.forEach((element, index) => {
+                if (element.favoriteId === favoriteId) {
+                    console.log("Element found:", element);
+                    // Supprimer l'élément trouvé du local storage
+                    favorites.splice(index, 1);
+                    localStorage.setItem("favoris", JSON.stringify(favorites));
+                }
+            });
+            
         }
     } else {
         satisfactory.setFavorite(favoriteId, allElement["element"], allElement["elementId"], allElement["elementType"]);
@@ -759,3 +769,6 @@ view.favoriteListContainer.addEventListener("click", (event) => {
     }
 });
 
+function deleteFavorite() {
+    
+}
