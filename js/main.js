@@ -259,6 +259,7 @@ async function getReceipInfoById(url) {
 async function getAllItemForReceip(receip, receipId) {
     let promise = []
     let ingredientNumber = [];
+    
 
     for (let i = 1; i <= 5; i++) {
 
@@ -274,8 +275,11 @@ async function getAllItemForReceip(receip, receipId) {
     }
     Promise.all(promise).then((data) => {
         data.forEach((elem, index) => {
-            computeSimpleElement("img", "", "", "data:image/gif;base64," + elem.imgBase64, document.querySelector("#ingredientReceip" + receipId + "-" + (index + 1)), "");
+            let ingredient_id = "ingredient_"+(index+1)+"_id"
+            console.log(receip[ingredient_id])
+            computeSimpleElement("img", "", "", "data:image/gif;base64," + elem.imgBase64, document.querySelector("#ingredientReceip" + receipId + "-" + (index + 1)), "ingredientReceipImg" + receipId + "-" + (index + 1));
             computeSimpleElement("p", "", ingredientNumber[index], "", document.querySelector("#ingredientReceip" + receipId + "-" + (index + 1)), "");
+            //saveDataInCache(document.getElementById("ingredientReceipImg" + receipId + "-" + (index + 1)), elem,elem)
         })
 
 
@@ -672,7 +676,7 @@ function computeElementReceip(receip, receipType, idReceip, alternativeReceip) {
     if (receip.ingredient_1_id) {
         computeSimpleElement("div", "ingredients-group", "", "", document.querySelector("#processReceip" + idReceip), "ingredientsGroup" + idReceip);
         if (receipType !== "item") {
-            document.querySelector(".ingredients-group").style.width = "50dvw";
+            document.querySelector(".ingredients-group").style.width = "70dvw";
 
         }
         computeSimpleElement("img", "loader", "", "./images/logo.png", document.querySelector("#ingredientsGroup" + idReceip), "loader")
@@ -729,7 +733,7 @@ function computeElementReceip(receip, receipType, idReceip, alternativeReceip) {
  */
 function addToFavorite(currentFavoriteBtn,element,elementId,elementType, elementName) {
     currentFavoriteBtn.addEventListener("click", ()=> {
-        //console.log(satisfactory.getFavorites())
+        //console.log(elementId)
         let favoriteId = elementName;
         favoriteId = favoriteId.replace(/ /g, "-");
         checkIfElmentInLocalStorage({favoriteId:favoriteId,element:element,elementId:elementId,elementType:elementType});
@@ -816,3 +820,12 @@ view.favoriteListContainer.addEventListener("click", (event) => {
         }
     }
 });
+
+/**
+ * Sauvegarde des données en cache pour 1 recherche. Lors d'un changement d'élément
+ */
+function saveDataInCache(currentImg,element,elementId,elementType, elementName) {
+    currentImg.addEventListener("click", () => {
+
+    })
+}
