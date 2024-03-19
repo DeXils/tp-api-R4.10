@@ -724,14 +724,15 @@ function checkIfElmentInLocalStorage(allElement) {
         });
         if (!isPresent) {
             satisfactory.setFavorite(favoriteId, allElement["element"], allElement["elementId"], allElement["elementType"]);
+            updateFavoriteList();
             localStorage.setItem("favoris",JSON.stringify(satisfactory.getFavorites()));
         }else {
             favorites.forEach((element, index) => {
                 if (element.favoriteId === favoriteId) {
-                    console.log("Element found:", element);
-                    // Supprimer l'élément trouvé du local storage
                     favorites.splice(index, 1);
-                    localStorage.setItem("favoris", JSON.stringify(favorites));
+                    satisfactory.setFavoriteList(favorites)
+                    updateFavoriteList()
+                    localStorage.setItem("favoris",JSON.stringify(satisfactory.getFavorites()));
                 }
             });
             
@@ -763,12 +764,8 @@ view.favoriteListContainer.addEventListener("click", (event) => {
 
         // Exécutez l'action correspondante pour l'élément cliqué
         if (clickedFavorite) {
-            checkIfElmentInLocalStorage(clickedFavorite);
+            //checkIfElmentInLocalStorage(clickedFavorite);
             computeInfoElement(clickedFavorite.element, clickedFavorite.elementId, clickedFavorite.elementType);
         }
     }
 });
-
-function deleteFavorite() {
-    
-}
