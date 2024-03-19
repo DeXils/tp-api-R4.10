@@ -544,7 +544,20 @@ function computeInfoElement(element, elementId, elementType) {
         categoryElement = `<i class="fa-solid fa-face-smile-beam"></i> ${elementData[elementType + "_behavior"]}`;
     }
 
-    computeSimpleElement("h1", "name-and-category", `${elementData[elementType + "_name"]} |${categoryElement}`, "", document.querySelector(".element-principal"), "");
+    
+    //let isFavorite = satisfactory.getFavorites().includes((favorite) => favorite.favoriteId === elementData[elementType + "_name"].replace(/ /g, "-"))
+    let isFavorite = false;
+    satisfactory.getFavorites().forEach((favorite) => {
+        if(favorite.favoriteId === elementData[elementType + "_name"].replace(/ /g, "-")) {
+            isFavorite = true;
+            return;
+        }
+    });
+
+    computeSimpleElement("h1", "name-and-category", `${elementData[elementType + "_name"]} |${categoryElement}`, "", document.querySelector(".element-principal"), elementData[elementType + "_name"].replace(/ /g, "-"));
+    if(isFavorite) {
+        document.querySelector("h1#"+elementData[elementType + "_name"].replace(/ /g, "-")).classList.add("favorite-text-highlight");
+    }
     computeSimpleElement("i", "fa-solid fa-thumbtack", "", "", document.querySelector(".name-and-category"), "favoriteBtn");
     addToFavorite(document.getElementById("favoriteBtn"),element,elementId,elementType,elementData[elementType + "_name"]);
     computeSimpleElement("div", "img-and-other", "", "", document.querySelector(".element-principal"), "");
@@ -629,14 +642,29 @@ function computeInfoElement(element, elementId, elementType) {
  * @param alternativeReceip
  */
 function computeElementReceip(receip, receipType, idReceip, alternativeReceip) {
+
+    let isFavorite = false;
+    satisfactory.getFavorites().forEach((favorite) => {
+        if(favorite.favoriteId === receip.recette.replace(/ /g, "-")) {
+            isFavorite = true;
+            return;
+        }
+    });
+
+
     computeSimpleElement("div", "receip-container", "", "", view.responseContainer, "receipContainer" + idReceip);
     computeSimpleElement("div", "receip-name-and-favorite", "", "", document.querySelector("#receipContainer" + idReceip), "receipNameAndFavorite" + idReceip);
-    computeSimpleElement("p", "", "<i class=\"fa-solid fa-receipt\"></i> Recette " + alternativeReceip + " : " + receip.recette, "", document.querySelector("#receipNameAndFavorite" + idReceip), "");
+    computeSimpleElement("p", "", "<i class=\"fa-solid fa-receipt\"></i> Recette " + alternativeReceip + " : " + receip.recette, "", document.querySelector("#receipNameAndFavorite" + idReceip), receip.recette.replace(/ /g, "-"));
     if (alternativeReceip !== "") {
         computeSimpleElement("i", "fa-solid fa-thumbtack", "", "", document.querySelector("#receipNameAndFavorite" + idReceip), "favoriteBtn"+idReceip);
+        if(isFavorite) {
+            document.getElementById("favoriteBtn"+idReceip).classList.add("favorite-text-highlight");
+        }
 
-        //console.log(satisfactory.getCurrentElement())
         addToFavorite(document.getElementById("favoriteBtn"+idReceip),satisfactory.getCurrentElement(),satisfactory.getCurrentElementId(),satisfactory.getCurrentElementType(),receip.recette);
+    }
+    if(isFavorite) {
+        document.querySelector("p#"+receip.recette.replace(/ /g, "-")).classList.add("favorite-text-highlight");
     }
     computeSimpleElement("div", "process-receip", "", "", document.querySelector("#receipContainer" + idReceip), "processReceip" + idReceip);
 
@@ -718,17 +746,28 @@ function checkIfElmentInLocalStorage(allElement) {
     let favoriteId = allElement.favoriteId
 
     if (favorites) {
+        let h1Element =  document.querySelector("h1#"+favoriteId)
+        let pElement = document.querySelector("p#"+favoriteId)
         let isPresent;
-        isPresent = favorites.find((element) => {
-            return element.favoriteId === favoriteId;
-        });
+        isPresent = favorites.find((element) => element.favoriteId === favoriteId);
         if (!isPresent) {
+            console.log(allElement)
+            if(h1Element) {
+                h1Element.classList.add("favorite-text-highlight");
+            }else if (pElement) {
+                pElement.classList.add("favorite-text-highlight");
+            }
             satisfactory.setFavorite(favoriteId, allElement["element"], allElement["elementId"], allElement["elementType"]);
             updateFavoriteList();
             localStorage.setItem("favoris",JSON.stringify(satisfactory.getFavorites()));
         }else {
             favorites.forEach((element, index) => {
                 if (element.favoriteId === favoriteId) {
+                    if(h1Element) {
+                        h1Element.classList.remove("favorite-text-highlight");
+                    }else if (pElement) {
+                        pElement.classList.remove("favorite-text-highlight");
+                    }
                     favorites.splice(index, 1);
                     satisfactory.setFavoriteList(favorites)
                     updateFavoriteList()
@@ -755,6 +794,12 @@ function updateFavoriteList(){
 
 view.favoriteListContainer.addEventListener("click", (event) => {
     if (event.target.classList.contains("favorite-element")) {
+        view.favoriteListContainer.childNodes.forEach((favorites) => {
+            if(favorites.classList.contains("favorite-element-highlight")){
+                favorites.classList.remove("favorite-element-highlight");
+            }
+        })
+        
         // Si un élément de la liste des favoris est cliqué
         const favoriteId = event.target.id;
         const favorites = JSON.parse(localStorage.getItem("favoris"));
@@ -764,7 +809,9 @@ view.favoriteListContainer.addEventListener("click", (event) => {
 
         // Exécutez l'action correspondante pour l'élément cliqué
         if (clickedFavorite) {
-            //checkIfElmentInLocalStorage(clickedFavorite);
+            event.target.classList.add("favorite-element-highlight");
+            satisfactory.setSearch(clickedFavorite.favoriteId.replace(/-/g, " "))
+            view.searchBar.value = satisfactory.getSearch()
             computeInfoElement(clickedFavorite.element, clickedFavorite.elementId, clickedFavorite.elementType);
         }
     }

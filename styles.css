@@ -324,3 +324,12 @@ li:hover {
   text-align: center;
   margin: 10px;
 }
+
+.favorite-text-highlight {
+  color: #E59345;
+}
+
+.favorite-element-highlight {
+  background-color: #E59345;
+
+}
