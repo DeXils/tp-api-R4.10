@@ -750,20 +750,29 @@ function checkIfElmentInLocalStorage(allElement) {
         let isPresent;
         isPresent = favorites.find((element) => element.favoriteId === favoriteId);
         if (!isPresent) {
-            h1Element.classList.add("favorite-text-highlight");
-            pElement.classList.add("favorite-text-highlight");
-            iElement.classList.add("favorite-text-highlight");
 
+            if(h1Element) {
+                h1Element.classList.add("favorite-text-highlight");
+                pElement.classList.add("favorite-text-highlight");
+                iElement.classList.add("favorite-text-highlight");
+            }else if (pElement) {
+                pElement.classList.add("favorite-text-highlight");
+                iElement.classList.add("favorite-text-highlight");
+            }
             satisfactory.setFavorite(favoriteId, allElement["element"], allElement["elementId"], allElement["elementType"]);
             updateFavoriteList();
             localStorage.setItem("favoris",JSON.stringify(satisfactory.getFavorites()));
         }else {
             favorites.forEach((element, index) => {
                 if (element.favoriteId === favoriteId) {
-                    h1Element.classList.remove("favorite-text-highlight");
-                    pElement.classList.remove("favorite-text-highlight");
-                    iElement.classList.remove("favorite-text-highlight");
-
+                    if(h1Element) {
+                        h1Element.classList.remove("favorite-text-highlight");
+                        pElement.classList.remove("favorite-text-highlight");
+                        iElement.classList.remove("favorite-text-highlight");
+                    }else if (pElement) {
+                        pElement.classList.remove("favorite-text-highlight");
+                        iElement.classList.remove("favorite-text-highlight");
+                    }
                     favorites.splice(index, 1);
                     satisfactory.setFavoriteList(favorites)
                     updateFavoriteList()
