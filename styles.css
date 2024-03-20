@@ -38,6 +38,16 @@ main {
   display: flex;
 }
 
+.text-intro {
+  margin: 25px 30px;
+  padding: 10px;
+  background-color: #333333 ;
+  color: #E59345;
+  border:#4D4D4D 5px solid;
+  border-radius: 10px;
+  width: calc(100dvw - 15dvw - 182px);
+}
+
 .favorite-content {
   width: 15dvw;
   height: calc(100dvh - 7dvh);
@@ -82,12 +92,11 @@ li:hover {
   border-radius: 15px;
   margin:25px 30px;
   width: calc(100dvw - 15dvw - 162px);
-  height: 10dvh;
+  
 }
 
 .search-interface-input {
   display: flex;
-  height: 10dvh;
   align-items: center;
 }
 
@@ -95,7 +104,6 @@ li:hover {
   color: #E59345;
   display: flex;
   flex-direction: column;
-  height: 10dvh;
   font-size: 1.3em;
   width: 100%;
 }
@@ -118,7 +126,7 @@ li:hover {
 }
 
 .search-body p {
-  padding: 5px 10px;
+  padding:5px 10px;
 }
 
 .search-btn {
@@ -241,6 +249,7 @@ li:hover {
 
 .receip-ingredient > img {
   width: 7dvw;
+  cursor: pointer;
 }
 
 .receip-ingredient > p {
@@ -254,6 +263,7 @@ li:hover {
 .receip-building img {
   padding: 20px;
   width: 10dvw;
+  cursor: pointer;
 }
 
 .receip-product,
@@ -332,4 +342,8 @@ li:hover {
 .favorite-element-highlight {
   background-color: #E59345;
 
+}
+
+#closeElement {
+  cursor: pointer;
 }

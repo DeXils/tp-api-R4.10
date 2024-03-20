@@ -19,4 +19,7 @@ const view = {
 
     //list des favori
     favoriteListContainer: document.getElementById("favoriteList"),
+
+    //Bouton pour réinitialiser la barre de recherche
+    closeElement: document.getElementById("closeElement"),
 };

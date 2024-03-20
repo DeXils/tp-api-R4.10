@@ -35,23 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
         satisfactory.setFavoriteList(JSON.parse(localStorage.getItem("favoris")));
         updateFavoriteList();
         favoritesList = document.querySelectorAll(".favorite-element")
-        
-        /*//Gestion du click
-        favoritesList.forEach((favorite)=> {
-            favorite.addEventListener("click", (event) => {
-                console.log(event.target)
-                let favorites = JSON.parse(localStorage.getItem("favoris"));
-                console.log(favorites)
-                favorites.forEach((element) => {
-                    if(element.favoriteId === event.target.id) {
-                        console.log(element)
-                        checkIfElmentInLocalStorage(element)
-                        computeInfoElement(element['element'],element['elementId'],element['elementType'])
-                        
-                    }
-                })
-            })
-        })*/
     }
 
     
@@ -275,11 +258,12 @@ async function getAllItemForReceip(receip, receipId) {
     }
     Promise.all(promise).then((data) => {
         data.forEach((elem, index) => {
-            let ingredient_id = "ingredient_"+(index+1)+"_id"
-            console.log(receip[ingredient_id])
+            let ingredient_id = receip["ingredient_"+(index+1)+"_id"]
+            let ingredient_name = receip["ingredient_"+(index+1)]
+            
             computeSimpleElement("img", "", "", "data:image/gif;base64," + elem.imgBase64, document.querySelector("#ingredientReceip" + receipId + "-" + (index + 1)), "ingredientReceipImg" + receipId + "-" + (index + 1));
             computeSimpleElement("p", "", ingredientNumber[index], "", document.querySelector("#ingredientReceip" + receipId + "-" + (index + 1)), "");
-            //saveDataInCache(document.getElementById("ingredientReceipImg" + receipId + "-" + (index + 1)), elem,elem)
+            saveDataInCache(document.getElementById("ingredientReceipImg" + receipId + "-" + (index + 1)), elem,ingredient_id,"item", ingredient_name);
         })
 
 
@@ -535,6 +519,7 @@ function computeSimpleElement(typeElement, classElement, textElement, srcElemenn
  */
 function computeInfoElement(element, elementId, elementType) {
 
+    console.log(element)
     let elementData = element[elementType][0];
 
     view.responseContainer.hidden = false;
@@ -628,7 +613,7 @@ function computeInfoElement(element, elementId, elementType) {
 
                 } else {
                     computeSimpleElement("h1", "error-response", data.message + " : " + elementId, "", view.responseContainer, "");
-                    console.log(data.message);
+                
                 }
 
             });
@@ -690,10 +675,13 @@ function computeElementReceip(receip, receipType, idReceip, alternativeReceip) {
         computeSimpleElement("img", "loader", "", "./images/logo.png", document.querySelector("#buildingReceip" + idReceip), "loader")
         getIdElementByName("building/getBuildingIdByName/" + receip.batiment)
             .then((data) => {
+                let idBuilding = data.building[0].id_building
+                
                 getElementInfoById("building/getBuildingInfoById/" + data.building[0].id_building)
                     .then((data) => {
                         document.getElementById("loader").remove()
                         computeSimpleElement("img", "", "", "data:image/gif;base64," + data.imgBase64, document.querySelector("#buildingReceip" + idReceip), "");
+                        saveDataInCache(document.querySelector("#buildingReceip" + idReceip + " > img"),data,idBuilding,"building",data.building[0]["building_name"])
                         computeSimpleElement("p", "", "Production : " + receip.temps + " sec", "", document.querySelector("#buildingReceip" + idReceip), "");
                         computeSimpleElement("div", "product-and-prerequis", "", "", document.querySelector("#processReceip" + idReceip), "productAndPrerequis" + idReceip);
                         computeSimpleElement("div", "receip-product", "", "", document.querySelector("#productAndPrerequis" + idReceip), "productReceip" + idReceip);
@@ -732,11 +720,11 @@ function computeElementReceip(receip, receipType, idReceip, alternativeReceip) {
  * @param elementType
  */
 function addToFavorite(currentFavoriteBtn,element,elementId,elementType, elementName) {
-    currentFavoriteBtn.addEventListener("click", ()=> {
-        //console.log(elementId)
+    currentFavoriteBtn.addEventListener("click", (event)=> {
+        console.log(element)
         let favoriteId = elementName;
         favoriteId = favoriteId.replace(/ /g, "-");
-        checkIfElmentInLocalStorage({favoriteId:favoriteId,element:element,elementId:elementId,elementType:elementType});
+        checkIfElmentInLocalStorage({favoriteId:favoriteId,element:element,elementId:elementId,elementType:elementType, favoriteBtnId:event.target.id});
         updateFavoriteList();
         })
 }
@@ -748,18 +736,21 @@ function addToFavorite(currentFavoriteBtn,element,elementId,elementType, element
 function checkIfElmentInLocalStorage(allElement) {
     const favorites = JSON.parse(localStorage.getItem("favoris"));
     let favoriteId = allElement.favoriteId
+    let favoriteBtnId = allElement.favoriteBtnId;
 
     if (favorites) {
         let h1Element =  document.querySelector("h1#"+favoriteId)
         let pElement = document.querySelector("p#"+favoriteId)
+        let iElement = document.querySelector("i#"+favoriteBtnId);
         let isPresent;
         isPresent = favorites.find((element) => element.favoriteId === favoriteId);
         if (!isPresent) {
-            console.log(allElement)
+        
             if(h1Element) {
                 h1Element.classList.add("favorite-text-highlight");
             }else if (pElement) {
                 pElement.classList.add("favorite-text-highlight");
+                iElement.classList.add("favorite-text-highlight");
             }
             satisfactory.setFavorite(favoriteId, allElement["element"], allElement["elementId"], allElement["elementType"]);
             updateFavoriteList();
@@ -771,6 +762,7 @@ function checkIfElmentInLocalStorage(allElement) {
                         h1Element.classList.remove("favorite-text-highlight");
                     }else if (pElement) {
                         pElement.classList.remove("favorite-text-highlight");
+                        iElement.classList.remove("favorite-text-highlight");
                     }
                     favorites.splice(index, 1);
                     satisfactory.setFavoriteList(favorites)
@@ -813,6 +805,7 @@ view.favoriteListContainer.addEventListener("click", (event) => {
 
         // Exécutez l'action correspondante pour l'élément cliqué
         if (clickedFavorite) {
+            console.log(clickedFavorite)
             event.target.classList.add("favorite-element-highlight");
             satisfactory.setSearch(clickedFavorite.favoriteId.replace(/-/g, " "))
             view.searchBar.value = satisfactory.getSearch()
@@ -826,6 +819,18 @@ view.favoriteListContainer.addEventListener("click", (event) => {
  */
 function saveDataInCache(currentImg,element,elementId,elementType, elementName) {
     currentImg.addEventListener("click", () => {
+        view.favoriteListContainer.childNodes.forEach((favorite) => {
+            favorite.classList.remove("favorite-element-highlight");
+        })
 
+        satisfactory.setSearch(elementName);
+        view.searchBar.value = satisfactory.getSearch();
+        computeInfoElement(element,elementId,elementType);
     })
 }
+
+view.closeElement.addEventListener("click", () => {
+    console.log("édfsdf")
+    view.searchBar.value = "";
+    satisfactory.setSearch("");
+})
