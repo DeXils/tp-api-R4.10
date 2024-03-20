@@ -525,7 +525,7 @@ function computeSimpleElement(typeElement, classElement, textElement, srcElemenn
  */
 function computeInfoElement(element, elementId, elementType) {
 
-    console.log(element)
+
     let elementData = element[elementType][0];
 
     view.responseContainer.hidden = false;
@@ -536,7 +536,22 @@ function computeInfoElement(element, elementId, elementType) {
     if (elementData[elementType + "_category"] !== undefined) {
         categoryElement = `<i class="fa-solid fa-box-archive"></i> ${elementData[elementType + "_category"]}`;
     } else {
-        categoryElement = `<i class="fa-solid fa-face-smile-beam"></i> ${elementData[elementType + "_behavior"]}`;
+        switch (elementData[elementType + "_behavior"]){
+            case 'Amical (apprivoisable)':
+                categoryElement = `<i class="fa-solid fa-bone"></i> ${elementData[elementType + "_behavior"]}`;
+                break;
+            case 'Passif':
+            case 'Amical':
+                categoryElement = `<i class="fa-solid fa-face-smile-beam"></i> ${elementData[elementType + "_behavior"]}`;
+                break;
+            case 'Neutre':
+                categoryElement = `<i class="fa-solid fa-face-meh"></i> ${elementData[elementType + "_behavior"]}`;
+                break;
+            case 'Agressif':
+                categoryElement = `<i class="fa-solid fa-face-angry"></i> ${elementData[elementType + "_behavior"]}`;
+                break;
+        }
+
     }
 
     
@@ -545,7 +560,6 @@ function computeInfoElement(element, elementId, elementType) {
     satisfactory.getFavorites().forEach((favorite) => {
         if(favorite.favoriteId === elementData[elementType + "_name"].replace(/ /g, "-")) {
             isFavorite = true;
-            return;
         }
     });
 
@@ -579,7 +593,11 @@ function computeInfoElement(element, elementId, elementType) {
     }
 
     if (elementType === "fauna") {
-        computeSimpleElement("p", "", "<i class=\"fa-solid fa-heart\"></i> : " + elementData[elementType + "_life_point"], "", document.querySelector(".element-stats"), "");
+        if(elementData[elementType + "_life_point"] !== null) {
+            computeSimpleElement("p", "", "<i class=\"fa-solid fa-heart\"></i> : " + elementData[elementType + "_life_point"], "", document.querySelector(".element-stats"), "");
+        }else {
+            computeSimpleElement("p", "", "<i class=\"fa-solid fa-heart\"></i> : Inconnue" , "", document.querySelector(".element-stats"), "");
+        }
         if (elementData[elementType + "_loot_size"]) {
             computeSimpleElement("p", "", "<i class=\"fa-solid fa-sack-xmark\"></i> Loot obtenue : " + elementData[elementType + "_loot_size"] + " " + elementData[elementType + "_loot_name"], "", document.querySelector(".element-stats"), "");
         }
@@ -625,7 +643,7 @@ function computeInfoElement(element, elementId, elementType) {
             });
     }
 
-    //addToFavorite(element,elementId,elementType);
+
 
 }
 
@@ -726,7 +744,6 @@ function computeElementReceip(receip, receipType, idReceip, alternativeReceip) {
  */
 function addToFavorite(currentFavoriteBtn,element,elementId,elementType, elementName) {
     currentFavoriteBtn.addEventListener("click", (event)=> {
-        console.log(element)
         let favoriteId = elementName;
         favoriteId = favoriteId.replace(/ /g, "-");
         checkIfElmentInLocalStorage({favoriteId:favoriteId,element:element,elementId:elementId,elementType:elementType, favoriteBtnId:event.target.id});
@@ -753,8 +770,11 @@ function checkIfElmentInLocalStorage(allElement) {
 
             if(h1Element) {
                 h1Element.classList.add("favorite-text-highlight");
-                pElement.classList.add("favorite-text-highlight");
-                iElement.classList.add("favorite-text-highlight");
+                if(pElement) {
+                    pElement.classList.add("favorite-text-highlight");
+                    iElement.classList.add("favorite-text-highlight");
+                }
+
             }else if (pElement) {
                 pElement.classList.add("favorite-text-highlight");
                 iElement.classList.add("favorite-text-highlight");
@@ -767,8 +787,10 @@ function checkIfElmentInLocalStorage(allElement) {
                 if (element.favoriteId === favoriteId) {
                     if(h1Element) {
                         h1Element.classList.remove("favorite-text-highlight");
-                        pElement.classList.remove("favorite-text-highlight");
-                        iElement.classList.remove("favorite-text-highlight");
+                        if(pElement){
+                            pElement.classList.remove("favorite-text-highlight");
+                            iElement.classList.remove("favorite-text-highlight");
+                        }
                     }else if (pElement) {
                         pElement.classList.remove("favorite-text-highlight");
                         iElement.classList.remove("favorite-text-highlight");
@@ -814,7 +836,7 @@ view.favoriteListContainer.addEventListener("click", (event) => {
 
         // Exécutez l'action correspondante pour l'élément cliqué
         if (clickedFavorite) {
-            console.log(clickedFavorite)
+
             event.target.classList.add("favorite-element-highlight");
             satisfactory.setSearch(clickedFavorite.favoriteId.replace(/-/g, " "))
             view.searchBar.value = satisfactory.getSearch()
@@ -839,7 +861,6 @@ function saveDataInCache(currentImg,element,elementId,elementType, elementName) 
 }
 
 view.closeElement.addEventListener("click", () => {
-    console.log("édfsdf")
     view.searchBar.value = "";
     satisfactory.setSearch("");
 })
