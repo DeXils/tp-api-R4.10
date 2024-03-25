@@ -412,6 +412,7 @@ view.searchBar.addEventListener("keyup", (event) => {
                             if (data['item']) {
                                 url = "item/getItemInfoById/" + data['item'][0].id_item;
                                 satisfactory.setCurrentElementId(data['item'][0].id_item);
+
                                 satisfactory.setCurrentElementType("item");
                                 getElementInfoById(url).then(item => {
                                     document.getElementById("loader").remove();
@@ -524,8 +525,9 @@ function computeSimpleElement(typeElement, classElement, textElement, srcElemenn
  * @param elementType
  */
 function computeInfoElement(element, elementId, elementType) {
-
-
+    satisfactory.setCurrentElement(element);
+    satisfactory.setCurrentElementId(elementId);
+    satisfactory.setCurrentElementType(elementType);
     let elementData = element[elementType][0];
 
     view.responseContainer.hidden = false;
@@ -849,6 +851,7 @@ view.favoriteListContainer.addEventListener("click", (event) => {
  * Sauvegarde des données en cache pour 1 recherche. Lors d'un changement d'élément
  */
 function saveDataInCache(currentImg,element,elementId,elementType, elementName) {
+
     currentImg.addEventListener("click", () => {
         view.favoriteListContainer.childNodes.forEach((favorite) => {
             favorite.classList.remove("favorite-element-highlight");
@@ -861,6 +864,7 @@ function saveDataInCache(currentImg,element,elementId,elementType, elementName) 
 }
 
 view.closeElement.addEventListener("click", () => {
+    window.location.reload();
     view.searchBar.value = "";
     satisfactory.setSearch("");
 })
