@@ -50,7 +50,7 @@ class Satisfactory {
         this._currentElement = {};
         this._currentElementType = "";
         this._currentElementId = 0;
-        this._token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJsb2dpbiI6IkRlWGlscyIsImV4cCI6MTczNDA5MTUwMSwiaWF0IjoxNzMxNDk5NTAxfQ.9K22u-8ojqAmhaw5i9EC_JGmRKt5b-XhYsVtOu8arCo";
+        this._token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJsb2dpbiI6IkRlWGlscyIsImV4cCI6MTc0OTA0ODY0NSwiaWF0IjoxNzQ2NDU2NjQ1fQ.lo14urdgV5SALZdmGxgz_8V9W6LkPU-rZxscb2t04EA";
     }
 
     /**
